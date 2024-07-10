@@ -5,9 +5,9 @@ local docs = {}
 docs.test = function()
   -- Filepaths that should generate docs
   local input_files = {
-    "./lua/moody.nvim/init.lua",
-    "./lua/moody.nvim/config.lua",
-    "./lua/moody.nvim/math.lua",
+    "./lua/moody/init.lua",
+    "./lua/moody/config.lua",
+    "./lua/moody/math.lua",
   }
 
   -- Maybe sort them that depends what you want and need
@@ -16,7 +16,7 @@ docs.test = function()
   end)
 
   -- Output file
-  local output_file = "./doc/moody.nvim.txt"
+  local output_file = "./doc/moody.txt"
   local output_file_handle = io.open(output_file, "w")
   assert(output_file_handle, "Could not open " .. output_file)
 

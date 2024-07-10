@@ -1,6 +1,6 @@
-local plugin = require("moody.nvim")
+local plugin = require("moody")
 
-describe("moody.nvim with default", function()
+describe("moody with default", function()
   it("can compute max", function()
     plugin.setup({})
     assert.equals(3, plugin.main(2.5, 2.4, "max"))
@@ -13,7 +13,7 @@ describe("moody.nvim with default", function()
   end)
 end)
 
-describe("moody.nvim with custom options", function()
+describe("moody with custom options", function()
   it("can compute max", function()
     plugin.setup({ round = false })
     assert.equals(2.5, plugin.main(2.5, 2.4, "max"))

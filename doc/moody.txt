@@ -1,60 +1,34 @@
 ================================================================================
-NVIM                                                                *moody.nvim*
+NVIM                                                                *moody*
 
-This is a template for a plugin. It is meant to be copied and modified. The
-following code is a simple example to show how to use this template and how to
-take advantage of code documentation to generate plugin documentation.
+This plugin sets up an autocommand to change the color of your CursorLine
+depending on the mode  eovim is currently in.
 
-This simple example plugin provides a command to calculate the maximum or
-minimum of two numbers. Moreover, the result can be rounded if specified by the
-user in its configuration using the setup function.
+There are two commands for this plugin
 
-`:PluginName {number} {number} {max|min}`
+This command disables the plugin.
+`:Moody disable
 
-The plugin can be configured using the |moody.nvim.setup()| function.
+This command enables the plugin.
+`:Moody enable
 
 
-PluginNameModule                                            *PluginNameModule*
+The plugin can be configured using the |moody.setup()| function.
+
+
+Moody                                            *Moody*
 
 
     Fields: ~
         {setup} (function)  setup the plugin
-        {main}  (function)  calculate the max or min of two numbers and round
-                            the result if specified by options
 
 
-moody.nvim.setup({options})                               *moody.nvim.setup()*
+moody.setup({options})                               *moody.setup()*
     Setup the plugin
 
 
     Parameters: ~
         {options} (Config)  config table
-
-
-moody.nvim.print({a}, {b}, {func}, {result})              *moody.nvim.print()*
-    Print the result of the comparison
-
-
-    Parameters: ~
-        {a}      (number)  first number
-        {b}      (number)  second number
-        {func}   (string)  "max" or "min"
-        {result} (number)  result
-
-
-moody.nvim.main({a}, {b}, {func})                          *moody.nvim.main()*
-    Calcululate the max or min of two numbers and round the result if specified
-    by options
-
-
-    Parameters: ~
-        {a}    (number)  first number
-        {b}    (number)  second number
-        {func} (string)  "max" or "min"
-
-    Return: ~
-        number: result
-
 
 
 ================================================================================
