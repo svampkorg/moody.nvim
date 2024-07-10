@@ -1,5 +1,5 @@
 ================================================================================
-MY_AWESOME_PLUGIN                                            *my_awesome_plugin*
+NVIM                                                                *moody.nvim*
 
 This is a template for a plugin. It is meant to be copied and modified. The
 following code is a simple example to show how to use this template and how to
@@ -11,7 +11,7 @@ user in its configuration using the setup function.
 
 `:PluginName {number} {number} {max|min}`
 
-The plugin can be configured using the |my_awesome_plugin.setup()| function.
+The plugin can be configured using the |moody.nvim.setup()| function.
 
 
 PluginNameModule                                            *PluginNameModule*
@@ -23,19 +23,15 @@ PluginNameModule                                            *PluginNameModule*
                             the result if specified by options
 
 
-my_awesome_plugin.setup({options})                 *my_awesome_plugin.setup()*
+moody.nvim.setup({options})                               *moody.nvim.setup()*
     Setup the plugin
 
-    Defaults: ~
-    {
-      round = true
-    }
 
     Parameters: ~
         {options} (Config)  config table
 
 
-my_awesome_plugin.print({a}, {b}, {func}, {result}) *my_awesome_plugin.print()*
+moody.nvim.print({a}, {b}, {func}, {result})              *moody.nvim.print()*
     Print the result of the comparison
 
 
@@ -46,7 +42,7 @@ my_awesome_plugin.print({a}, {b}, {func}, {result}) *my_awesome_plugin.print()*
         {result} (number)  result
 
 
-my_awesome_plugin.main({a}, {b}, {func})            *my_awesome_plugin.main()*
+moody.nvim.main({a}, {b}, {func})                          *moody.nvim.main()*
     Calcululate the max or min of two numbers and round the result if specified
     by options
 
