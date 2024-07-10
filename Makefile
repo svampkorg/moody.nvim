@@ -19,10 +19,10 @@ docs:
 
 init:
 	@nvim --headless --noplugin \
-	  -c "vimgrep /my_awesome_plugin/gj **/*.lua **/*.vim Makefile" \
-	  -c "cfdo %s/my_awesome_plugin/$(name)/ge | update" \
+	  -c "vimgrep /moody.nvim/gj **/*.lua **/*.vim Makefile" \
+	  -c "cfdo %s/moody.nvim/$(name)/ge | update" \
 	  -c "qa"
-	@find . -depth -type d -name '*my_awesome_plugin*' | \
-	  while read dir; do mv "$$dir" "$${dir//my_awesome_plugin/$(name)}"; done
-	@find . -type f -name '*my_awesome_plugin*' | \
-	  while read file; do mv "$$file" "$${file//my_awesome_plugin/$(name)}"; done
+	@find . -depth -type d -name '*moody.nvim*' | \
+	  while read dir; do mv "$$dir" "$${dir//moody.nvim/$(name)}"; done
+	@find . -type f -name '*moody.nvim*' | \
+	  while read file; do mv "$$file" "$${file//moody.nvim/$(name)}"; done

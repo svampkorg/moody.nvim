@@ -1,4 +1,4 @@
----@tag my_awesome_plugin
+---@tag moody.nvim
 
 ---@brief [[
 ---This is a template for a plugin. It is meant to be copied and modified.
@@ -12,20 +12,20 @@
 --- `:PluginName {number} {number} {max|min}`
 --- </pre>
 ---
---- The plugin can be configured using the |my_awesome_plugin.setup()| function.
+--- The plugin can be configured using the |moody.nvim.setup()| function.
 ---
 ---@brief ]]
 
 ---@class PluginNameModule
 ---@field setup function: setup the plugin
 ---@field main function: calculate the max or min of two numbers and round the result if specified by options
-local my_awesome_plugin = {}
+local moody.nvim = {}
 
 --- Setup the plugin
 ---@param options Config: config table
----@eval { ['description'] = require('my_awesome_plugin.config').__format_keys() }
-my_awesome_plugin.setup = function(options)
-  require("my_awesome_plugin.config").__setup(options)
+---@eval { ['description'] = require('moody.nvim.config').__format_keys() }
+moody.nvim.setup = function(options)
+  require("moody.nvim.config").__setup(options)
 end
 
 ---Print the result of the comparison
@@ -33,9 +33,9 @@ end
 ---@param b number: second number
 ---@param func string: "max" or "min"
 ---@param result number: result
-my_awesome_plugin.print = function(a, b, func, result)
+moody.nvim.print = function(a, b, func, result)
   local s = "The " .. func .. " of " .. a .. " and " .. b .. " is " .. result
-  if require("my_awesome_plugin.config").options.round then
+  if require("moody.nvim.config").options.round then
     s = s .. " (rounded)"
   end
   print(s)
@@ -46,15 +46,15 @@ end
 ---@param b number: second number
 ---@param func string: "max" or "min"
 ---@return number: result
-my_awesome_plugin.main = function(a, b, func)
-  local options = require("my_awesome_plugin.config").options
-  local mymath = require("my_awesome_plugin.math")
+moody.nvim.main = function(a, b, func)
+  local options = require("moody.nvim.config").options
+  local mymath = require("moody.nvim.math")
   local result = mymath[func](a, b)
   if options.round then
     result = mymath.round(result)
   end
-  my_awesome_plugin.print(a, b, func, result)
+  moody.nvim.print(a, b, func, result)
   return result
 end
 
-return my_awesome_plugin
+return moody.nvim
