@@ -1,34 +1,37 @@
 ================================================================================
-NVIM                                                                *moody*
+MOODY                                                                    *moody*
 
-This plugin sets up an autocommand to change the color of your CursorLine
-depending on the mode  eovim is currently in.
+Moody!
 
-There are two commands for this plugin
-
-This command disables the plugin.
-`:Moody disable
-
-This command enables the plugin.
-`:Moody enable
-
-
-The plugin can be configured using the |moody.setup()| function.
-
-
-Moody                                            *Moody*
+Moody                                                                  *Moody*
 
 
     Fields: ~
         {setup} (function)  setup the plugin
 
 
-moody.setup({options})                               *moody.setup()*
+moody.setup({options})                                         *moody.setup()*
     Setup the plugin
 
+    Defaults: ~
+    {
+      blend = {
+        command = 0.2,
+        insert = 0.2,
+        normal = 0.2,
+        replace = 0.2,
+        select = 0.2,
+        terminal = 0.2,
+        terminal_n = 0.2,
+        visual = 0.2
+      },
+      bold_nr = true,
+      disabled_buffers = {}
+    }
 
     Parameters: ~
         {options} (Config)  config table
+
 
 
 ================================================================================
@@ -36,53 +39,15 @@ MathModule                                                        *MathModule*
 
 
     Fields: ~
-        {max} (function)  Will return the bigger number
-        {min} (function)  Will return the smaller number
+        {int_to_hex_string} (function)  Will return the bigger number
+        {blend}             (function)  Blends two colors together with an
+                                        amount from 0 to 1, 0 being one color
+                                        and 1 being the other.
 
 
-M.max({a}, {b})                                                      *M.max()*
-    Will return the bigger number
+M.int_to_hex_string()                                  *M.int_to_hex_string()*
+    Will turn a integer colour value into a string hex value
 
-
-    Parameters: ~
-        {a} (number)  first number
-        {b} (number)  second number
-
-    Return: ~
-        number: bigger number
-
-    See: ~
-        |M.min()|
-
-
-M.min({a}, {b})                                                      *M.min()*
-    Will return the smaller number
-
-
-    Parameters: ~
-        {a} (number)  first number
-        {b} (number)  second number
-
-    Return: ~
-        number: smaller number
-
-    See: ~
-        |M.max()|
-
-
-M.round({num})                                                     *M.round()*
-    Will round a float number to the nearest integer
-
-
-    Parameters: ~
-        {num} (number)  float number
-
-    Return: ~
-        number: rounded num
-
-    See: ~
-        |math.floor()|
-        |math.ceil()|
 
 
 
@@ -99,7 +64,11 @@ Config                                                                *Config*
 
 
     Fields: ~
-        {round} (boolean)  round the result after calculation
+        {blend}            (table)    how much to blend colors with black for
+                                      the cursorline
+        {disabled_buffers} (table)    List of buffers to disable this plugin
+                                      for.. HELP!
+        {bold_nr}          (boolean)  bold linenumbers or not
 
 
 
