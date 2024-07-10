@@ -19,6 +19,7 @@ Don't look down! 🚠
 - [Why?](#-Why?)
 - [Install](#-Install)
 - [Setup](#-Setup)
+- [Video](#-Video)
 - [Acknowledgments](#-Acknowledgments)
 
 ## ❓Why?
@@ -88,6 +89,10 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
   bold_nr = true,
 }
 ```
+
+## 🎥 Video
+
+- A video of the plugin in action comming soon 🔜
 
 ## ⭐ Acknowledgments
 
