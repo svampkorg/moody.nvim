@@ -16,14 +16,14 @@ ______________________________________________________________________
 
 Don't look down! 🚠
 
-- [Why](#-Why?)
+- [Why?](#-Why?)
 - [Setup](#-Setup)
 - [Acknowledgments](#-Acknowledgments)
 
 ## ❓Why?
 
-- Because sometimes I loose track of which mode I'm in, so I have to look down at the StatusLine to check if the color of it means 'Insert' or 'Command' or 'Normal' etc..
-I figured it'd be quicker if the CursorColomn would change colour depending on mode.
+- If you look down, you might miss out on some code getting inserted by your quick caffeine induced coding fingers! I'd be a real shame if that happend when you are in the wrong mode 🤦
+I made this plugin so I could see which mode Neovim is in just by the color of CursorColumn.
 
 ## 🫣 Setup
 
