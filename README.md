@@ -26,7 +26,7 @@ Don't look down! 🚠
 If you look down, you might miss out on some code getting inserted by your quick caffeine induced coding fingers!
 I'd be a real shame if that happend when you are in the wrong mode 🤦
 
-I made this plugin so I could see which mode Neovim is in just by the color of CursorColumn.
+I made this plugin so I could see which mode Neovim is in just by the color of CursorLine.
 
 ## 💾 Install
 
@@ -34,7 +34,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 ```lua
 {
     "svampkorg/moody.nvim",
-    event = { "VimEnter", "ModeChanged" },
+    event = { "ModeChanged" },
     dependencies = {
         -- or wherever you setup your HL groups :)
         "catppuccin/nvim",
@@ -94,4 +94,4 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 - [ellisonleao/nvim-plugin-template](https://github.com/ellisonleao/nvim-plugin-template) - *Plugin Structure*
 - [S1M0N38/my-awesome-plugin.nvim](https://github.com/ellisonleao/nvim-plugin-template) - *Plugin Structure* I used this to generate the structure of this plugin. Thanks S1M0N38! ❤️
 - [nvim-telescope/telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) - *Tests, lint, docs generation*
-- [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim) - *Colour calculations* Borrowed some color calculation methods from here ❤️
+- [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim) - *Colour calculations* Borrowed some colour calculation methods from here ❤️
