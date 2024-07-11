@@ -41,7 +41,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
         "catppuccin/nvim",
     },
     opts = {
-        -- you can set different blend modes for your different modes. Some colours might look better more dark.
+        -- you can set different blend values for your different modes. Some colours might look better more dark.
         blend = {
             normal = 0.2,
             insert = 0.2,
