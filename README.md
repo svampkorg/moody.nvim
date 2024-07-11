@@ -31,7 +31,8 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
         "catppuccin/nvim",
     },
     opts = {
-        -- you can set different blend values for your different modes. Some colours might look better more dark.
+        -- you can set different blend values for your different modes.
+        -- Some colours might look better more dark.
         blend = {
             normal = 0.2,
             insert = 0.2,
@@ -46,7 +47,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
   }
 ```
 
-## 🫣 Setup
+## 💺 Setup
 
 - Define your HL groups within your colorscheme. For example like this, in catppuccin highlight_overrides
 ```lua
@@ -79,6 +80,10 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
   bold_nr = true,
 }
 ```
+
+## 🤔 Todo
+
+- Make moody ignore certain buffers, or filetypes. (It already ignores nvim.dapui files)
 
 ## ⭐ Acknowledgments
 
