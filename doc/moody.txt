@@ -41,8 +41,7 @@ MathModule                                                        *MathModule*
     Fields: ~
         {int_to_hex_string} (function)  Will return the bigger number
         {blend}             (function)  Blends two colors together with an
-                                        amount from 0 to 1, 0 being one color
-                                        and 1 being the other.
+                                        amount from 0 to 1,
 
 
 M.int_to_hex_string()                                  *M.int_to_hex_string()*
