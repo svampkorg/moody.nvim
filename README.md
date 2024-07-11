@@ -17,9 +17,9 @@ ______________________________________________________________________
 Don't look down! 🚠
 
 - [Why?](#-Why?)
+- [Video](#-Video)
 - [Install](#-Install)
 - [Setup](#-Setup)
-- [Video](#-Video)
 - [Acknowledgments](#-Acknowledgments)
 
 ## ❓Why?
@@ -28,6 +28,10 @@ If you look down, you might miss out on some code getting inserted by your quick
 I would be a real shame if that happens when you are not in the mode for it. 🤦
 
 I made this plugin so I could see which mode Neovim is in just by the color of CursorLine and CursorLineNr.
+
+## 🎥 Video
+
+<https://github.com/svampkorg/moody.nvim/assets/99117038/2a6b9716-4758-487c-a032-2678fe224825>
 
 ## 💾 Install
 
@@ -89,10 +93,6 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
   bold_nr = true,
 }
 ```
-
-## 🎥 Video
-
-<https://github.com/svampkorg/moody.nvim/assets/99117038/2a6b9716-4758-487c-a032-2678fe224825>
 
 ## ⭐ Acknowledgments
 
