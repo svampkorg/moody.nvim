@@ -8,6 +8,7 @@ Don't look down! 🚠
 - [Setup](#-Setup)
 - [Acknowledgments](#-Acknowledgments)
 - [Similar plugins](#-Similar)
+- [Known issues](#-Issues)
 
 ## ❓Why?
 
@@ -26,7 +27,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 ```lua
 {
     "svampkorg/moody.nvim",
-    event = { "ModeChanged" },
+    event = { "ModeChanged", "BufWinEnter", "WinEnter" },
     dependencies = {
         -- or wherever you setup your HL groups :)
         "catppuccin/nvim",
@@ -77,10 +78,28 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
     terminal = 0.2,
     terminal_n = 0.2,
   },
-  disabled_buffers = {},
+  disabled_filetypes = {},
   bold_nr = true,
 }
 ```
+
+## 🤯 Issues
+
+- If you use nvim-dap with nvim-dap-ui it will be quite distracting with the
+cursorlines in dapui windows changing colors all the time while switching modes.
+
+    This autocommand will turn off cursorline for dapui and also show the dapui window
+    title in winbar for dapui windows:
+    ```lua
+    vim.api.nvim_create_autocmd("BufWinEnter", {
+        callback = function()
+            if string.match(vim.bo.filetype, "dapui") then
+                vim.wo.cursorline = false
+                vim.wo.winbar = " %t"
+            end
+        end,
+    })
+    ```
 
 ## 🤔 Todo
 

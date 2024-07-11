@@ -27,6 +27,13 @@ function M.hl_unblended()
   }
 end
 
+---@param filetype string: the filetype to check if it's disabled
+---@return boolean: true if filetype was in list of disabled filetypes
+function M.is_disabled_filetype(filetype)
+  local disabled_filetypes = require("moody.config").options.disabled_filetypes
+  return vim.tbl_contains(disabled_filetypes, filetype)
+end
+
 --- get darkened variant of the HL colours
 --- @param blend table|number: number: a number between 0 and 1 used to darken.
 --- table: a table of modes with their respective blend
@@ -135,3 +142,4 @@ function M.P(v)
 end
 
 return M
+
