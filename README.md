@@ -7,6 +7,7 @@ Don't look down! 🚠
 - [Install](#-Install)
 - [Setup](#-Setup)
 - [Acknowledgments](#-Acknowledgments)
+- [Similar plugins](#-Similar)
 
 ## ❓Why?
 
@@ -91,3 +92,8 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 - [S1M0N38/my-awesome-plugin.nvim](https://github.com/ellisonleao/nvim-plugin-template) - *Plugin Structure* I used this to generate the structure of this plugin. Thanks S1M0N38! ❤️
 - [nvim-telescope/telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) - *Tests, lint, docs generation*
 - [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim) - *Colour calculations* Borrowed some colour calculation methods from here ❤️
+
+## 🫶 Similar
+
+- Plugins that do the same thing!
+- [modes](https://github.com/mvllow/modes.nvim)
