@@ -92,7 +92,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 
 ## 🎥 Video
 
-- A video of the plugin in action comming soon 🔜
+<https://github.com/svampkorg/moody.nvim/assets/99117038/2a6b9716-4758-487c-a032-2678fe224825>
 
 ## ⭐ Acknowledgments
 
