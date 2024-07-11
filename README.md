@@ -25,9 +25,9 @@ Don't look down! 🚠
 ## ❓Why?
 
 If you look down, you might miss out on some code getting inserted by your quick caffeine induced coding fingers!
-I'd be a real shame if that happend when you are in the wrong mode 🤦
+I would be a real shame if that happens when you are not in the mode for it. 🤦
 
-I made this plugin so I could see which mode Neovim is in just by the color of CursorLine.
+I made this plugin so I could see which mode Neovim is in just by the color of CursorLine and CursorLineNr.
 
 ## 💾 Install
 
@@ -58,7 +58,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 
 ## 🫣 Setup
 
-- Define your HL groups within your colorscheme. For example like this, for catppuccin
+- Define your HL groups within your colorscheme. For example like this, in catppuccin highlight_overrides
 ```lua
 {
     NormalMoody = { fg = C.blue },
