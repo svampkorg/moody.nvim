@@ -1,7 +1,7 @@
 local M = {}
 
-local darken = require('moody.math').darken
-local tohex = require('moody.math').int_to_hex_string
+local darken = require("moody.math").darken
+local tohex = require("moody.math").int_to_hex_string
 
 --- switch between string choice in table of string key, and table value choices
 --- A default case is not mandatory, but it will return nil if there is none :P
@@ -44,7 +44,8 @@ function M.hl_blended(blend)
       terminal = darken(M.hl_unblended().terminal, blend.terminal),
       terminal_n = darken(M.hl_unblended().terminal_n, blend.terminal_n),
     }
-  else if blend_type == "number" then
+  else
+    if blend_type == "number" then
       return {
         normal = darken(M.hl_unblended().normal, blend),
         insert = darken(M.hl_unblended().insert, blend),
@@ -55,7 +56,8 @@ function M.hl_blended(blend)
         terminal = darken(M.hl_unblended().terminal, blend),
         terminal_n = darken(M.hl_unblended().terminal_n, blend),
       }
-    else return {
+    else
+      return {
         normal = darken(M.hl_unblended().normal, 0.3),
         insert = darken(M.hl_unblended().insert, 0.3),
         visual = darken(M.hl_unblended().visual, 0.3),

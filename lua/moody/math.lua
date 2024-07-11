@@ -10,7 +10,7 @@ function M.int_to_hex_string(number)
   if not number then
     return number
   else
-		return "#" .. ("%06x"):format(number)
+    return "#" .. ("%06x"):format(number)
   end
 end
 

@@ -1,7 +1,7 @@
 ---@class ConfigModule
 ---@field defaults Config: default options
 ---@field options Config: config table extending defaults
-local M    = {}
+local M = {}
 
 M.defaults = {
   blend = {
@@ -17,7 +17,6 @@ M.defaults = {
   disabled_buffers = {},
   bold_nr = true,
 }
-
 
 ---@class Config
 ---@field blend table: how much to blend colors with black for the cursorline
@@ -55,7 +54,7 @@ function M.__setup(options)
     group = vim.api.nvim_create_augroup("MoodyGroup", { clear = true }),
     callback = function()
       utils.hl_callback(M.options.hl_blended, M.options.hl_unblended, M.options.bold_nr)
-    end
+    end,
   })
   vim.api.nvim_set_hl(0, "Visual", { bg = M.options.hl_blended.visual })
   utils.hl_callback(M.options.hl_blended, M.options.hl_unblended, M.options.bold_nr)
