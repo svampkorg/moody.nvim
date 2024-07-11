@@ -1,6 +1,7 @@
 ---@class MathModule
 ---@field int_to_hex_string function: Will return the bigger number
----@field blend function: Blends two colors together with an amount from 0 to 1, 0 being one color and 1 being the other.
+---@field blend function: Blends two colors together with an amount from 0 to 1,
+--- 0 being one color and 1 being the other.
 local M = {}
 --- Will turn a integer colour value into a string hex value
 --- @param number number: an integer number to convert
@@ -14,7 +15,8 @@ function M.int_to_hex_string(number)
   end
 end
 
--- "Borrowed" from Mr Folke TokyonNight :) - https://github.com/folke/tokyonight.nvim/blob/66a272ba6cf93bf303c4b7a91b100ca0dd3ec7bd/lua/tokyonight/util.lua#L30
+-- "Borrowed" from Mr Folke TokyonNight :)
+-- https://github.com/folke/tokyonight.nvim/blob/66a272ba6cf93bf303c4b7a91b100ca0dd3ec7bd/lua/tokyonight/util.lua#L30
 M.bg = "#000000"
 M.fg = "#ffffff"
 M.m_day_brightness = 0.3
