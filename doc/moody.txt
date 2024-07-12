@@ -26,7 +26,7 @@ moody.setup({options})                                         *moody.setup()*
         visual = 0.2
       },
       bold_nr = true,
-      disabled_buffers = {}
+      disabled_filetypes = {}
     }
 
     Parameters: ~
@@ -63,11 +63,11 @@ Config                                                                *Config*
 
 
     Fields: ~
-        {blend}            (table)    how much to blend colors with black for
-                                      the cursorline
-        {disabled_buffers} (table)    List of buffers to disable this plugin
-                                      for.. HELP!
-        {bold_nr}          (boolean)  bold linenumbers or not
+        {blend}              (table)    how much to blend colors with black
+                                        for the cursorline
+        {disabled_filetypes} (table)    List of buffers to disable this plugin
+                                        for
+        {bold_nr}            (boolean)  bold linenumbers or not
 
 
 
