@@ -10,20 +10,6 @@ local function is_disabled_filetype(filetype)
   return vim.tbl_contains(disabled_filetypes, filetype) or string.match(filetype, "dapui")
 end
 
--- ---save highlights, also converts to hex string because reasons :)
--- local function save_all_highlight()
---   local tohex = require("moody.math").int_to_hex_string
---   M.cursorline_hl = vim.api.nvim_get_hl(0, { name = "CursorLine" })
---   M.cursorlinenr_hl = vim.api.nvim_get_hl(0, { name = "CursorLineNr" })
---   M.visual = vim.api.nvim_get_hl(0, { name = "Visual" })
---   M.cursorline_bg = tohex(M.cursorline_hl.bg)
---   M.cursorline_fg = tohex(M.cursorline_hl.fg)
---   M.cursorlinenr_bg = tohex(M.cursorlinenr_hl.bg)
---   M.cursorlinenr_fg = tohex(M.cursorlinenr_hl.fg)
---   M.visual_bg = tohex(M.visual.bg)
---   M.visual_fg = tohex(M.visual.fg)
--- end
-
 local function cache_colors_setup_highlighs()
   local utils = require("moody.utils")
   M.options.hl_unblended = utils.hl_unblended()
@@ -122,12 +108,10 @@ M.defaults = {
   bold_nr = true,
 }
 
----@alias MoodyFocus "window" | "neovim" | "both"
-
 ---@class Config
 ---@field blends Blends: how much to blend colors with black for the cursorline
 ---@field colors Colors: table of colours with respective mode
----@field disabled_filetypes table: List of buffers to disable this plugin for
+---@field disabled_filetypes table<string>: List of buffers to disable this plugin for
 ---@field bold_nr boolean: bold linenumbers or not
 M.options = {}
 
@@ -139,7 +123,7 @@ function M.__setup(options)
   M.options = vim.tbl_deep_extend("force", {}, M.defaults, options or {})
   local utils = require("moody.utils")
 
-  local augroup = vim.api.nvim_create_augroup("MoodyGroupModeChanged", { clear = true })
+  local augroup = vim.api.nvim_create_augroup("MoodyAuGroup", { clear = true })
 
   -- setup highlight namespaces for modes
   setup_hl_namespaces()
@@ -164,8 +148,6 @@ function M.__setup(options)
         return
       end
 
-      -- vim.api.nvim_set_hl(M.ns_hl, "CursorLine", { bg = M.options.hl_blended.normal })
-      -- vim.api.nvim_set_hl(M.ns_hl, "CursorLineNr", { fg = M.options.hl_unblended.normal, bold = M.options.bold_nr })
       vim.api.nvim_set_hl_ns(M.ns_normal)
     end,
   })
@@ -175,115 +157,77 @@ function M.__setup(options)
     desc = "set highlights depending on mode",
     group = augroup,
     callback = function(event)
-      -- utils.P(event)
-
-      -- utils.P("active window: " .. win_id)
-
       -- restore all highlights if disabled
       if is_disabled_filetype(vim.bo.filetype) then
         vim.api.nvim_set_hl_ns(0)
         return
       end
 
-      -- use saved values as defaults
-      -- local blended
-      -- local unblended
-
       -- regex match with mode entered
       local mode = string.match(event.match, ".*:([^:]+)")
 
       local win = vim.api.nvim_get_current_win()
 
-      local debugText = "default"
+      -- local debugText = "default"
 
       utils.switch(mode, {
         ["n"] = function()
           vim.api.nvim_win_set_hl_ns(win, M.ns_normal)
-          debugText = "normal"
-          -- blended = M.options.hl_blended.normal
-          -- unblended = M.options.hl_unblended.normal
+          -- debugText = "normal"
         end,
         ["i"] = function()
           vim.api.nvim_win_set_hl_ns(win, M.ns_insert)
-          debugText = "insert"
-          -- blended = M.options.hl_blended.insert
-          -- unblended = M.options.hl_unblended.insert
+          -- debugText = "insert"
         end,
         ["ix"] = function()
           vim.api.nvim_win_set_hl_ns(win, M.ns_insert)
-          debugText = "insert-completion"
-          -- blended = M.options.hl_blended.insert
-          -- unblended = M.options.hl_unblended.insert
+          -- debugText = "insert-completion"
         end,
         ["v"] = function()
           vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
-          debugText = "visual"
-          -- blended = M.options.hl_blended.visual
-          -- unblended = M.options.hl_unblended.visual
+          -- debugText = "visual"
         end,
         ["V"] = function()
           vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
-          debugText = "visual-line"
-          -- blended = M.options.hl_blended.visual
-          -- unblended = M.options.hl_unblended.visual
+          -- debugText = "visual-line"
         end,
         [""] = function()
           vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
-          debugText = "visual-block"
-          -- blended = M.options.hl_blended.visual
-          -- unblended = M.options.hl_unblended.visual
+          -- debugText = "visual-block"
         end,
         ["c"] = function()
           vim.api.nvim_win_set_hl_ns(win, M.ns_command)
-          debugText = "command"
-          -- blended = M.options.hl_blended.command
-          -- unblended = M.options.hl_unblended.command
+          -- debugText = "command"
         end,
         ["r"] = function()
           vim.api.nvim_win_set_hl_ns(win, M.ns_replace)
-          debugText = "replace"
-          -- blended = M.options.hl_blended.replace
-          -- unblended = M.options.hl_unblended.replace
+          -- debugText = "replace"
         end,
         ["s"] = function()
           vim.api.nvim_win_set_hl_ns(win, M.ns_select)
-          debugText = "select"
-          -- blended = M.options.hl_blended.select
-          -- unblended = M.options.hl_unblended.select
+          -- debugText = "select"
         end,
         ["t"] = function()
           vim.api.nvim_win_set_hl_ns(win, M.ns_terminal)
-          debugText = "terminal"
-          -- blended = M.options.hl_blended.terminal
-          -- unblended = M.options.hl_unblended.terminal
+          -- debugText = "terminal"
         end,
         ["nt"] = function()
           vim.api.nvim_win_set_hl_ns(win, M.ns_terminal_n)
-          debugText = "normal-terminal"
-          -- blended = M.options.hl_blended.terminal_n
-          -- unblended = M.options.hl_unblended.terminal_n
+          -- debugText = "normal-terminal"
         end,
         ["no"] = function()
           vim.api.nvim_win_set_hl_ns(win, M.ns_operator)
-          debugText = "operator-pending"
-          -- blended = M.options.hl_blended.operator
-          -- unblended = M.options.hl_unblended.operator
+          -- debugText = "operator-pending"
         end,
         ["default"] = function()
           vim.api.nvim_set_hl_ns(0)
-          debugText = "default"
-          -- blended = M.cursorline_hl.bg
-          -- unblended = M.cursorlinenr_hl.fg
+          -- debugText = "default"
         end,
       })()
 
       -- setup and print some debug data top cmdline
-      local debugdata = "mode is " .. mode .. " debugText is: " .. debugText
-      vim.cmd(string.format([[echo "%s"]], debugdata))
-
-      -- vim.api.nvim_set_hl(M.ns_hl, "CursorLine", { bg = blended })
-      -- vim.api.nvim_set_hl(M.ns_hl, "CursorLineNr", { fg = unblended, bold = M.options.bold_nr })
-      -- vim.api.nvim_set_hl_ns(M.ns_hl)
+      -- local debugdata = "mode is " .. mode .. " debugText is: " .. debugText
+      -- vim.cmd(string.format([[echo "%s"]], debugdata))
     end,
   })
 
@@ -292,13 +236,13 @@ function M.__setup(options)
     callback = cache_colors_setup_highlighs,
   })
 
+  -- only show cursorline in active window
   vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "BufWinEnter" }, {
     group = augroup,
     callback = function()
       vim.wo.cursorline = true
     end,
   })
-
   vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
     group = augroup,
     callback = function()
