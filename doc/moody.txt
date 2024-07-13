@@ -75,12 +75,9 @@ Config                                                                *Config*
 
 
     Fields: ~
-        {blends}             (Blends)   how much to blend colors with black
-                                        for the cursorline
-        {colors}             (Colors)   table of colours with respective mode
-        {disabled_filetypes} (table)    List of buffers to disable this plugin
-                                        for
-        {bold_nr}            (boolean)  bold linenumbers or not
+        {blends} (Blends)  how much to blend colors with black for the
+                           cursorline
+        {colors} (Colors)  table of colours with respective mode
 
 
 M.defaults()                                                    *M.defaults()*
