@@ -126,14 +126,13 @@ cursorlines in dapui windows changing colors all the time while switching modes.
     This autocommand will turn off cursorline for dapui and also show the dapui window
     title in winbar for dapui windows:
     ```lua
-    vim.api.nvim_create_autocmd("BufWinEnter", {
-        callback = function()
-            if string.match(vim.bo.filetype, "dapui") then
-                vim.wo.cursorline = false
-                vim.wo.winbar = " %t"
-            end
-        end,
-    })
+	vim.api.nvim_create_autocmd("BufWinEnter", {
+		pattern = "*/DAP *",
+		callback = function()
+			vim.wo.cursorline = false
+			vim.wo.winbar = " %t"
+		end,
+	})
     ```
 
 ## 🤔 Todo
