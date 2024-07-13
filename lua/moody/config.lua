@@ -10,50 +10,18 @@ local function is_disabled_filetype(filetype)
   return vim.tbl_contains(disabled_filetypes, filetype) or string.match(filetype, "dapui")
 end
 
-local function set_hl_ns_cur_win()
-  vim.api.nvim_win_add_ns(vim.api.nvim_get_current_win(), M.ns_hl)
-  vim.api.nvim_set_hl_ns(M.ns_hl)
-end
-
----save highlights, also converts to hex string because reasons :)
-local function save_all_highlight()
-  local tohex = require("moody.math").int_to_hex_string
-  M.cursorline_hl = vim.api.nvim_get_hl(0, { name = "CursorLine" })
-  M.cursorlinenr_hl = vim.api.nvim_get_hl(0, { name = "CursorLineNr" })
-  M.visual = vim.api.nvim_get_hl(0, { name = "Visual" })
-  M.cursorline_bg = tohex(M.cursorline_hl.bg)
-  M.cursorline_fg = tohex(M.cursorline_hl.fg)
-  M.cursorlinenr_bg = tohex(M.cursorlinenr_hl.bg)
-  M.cursorlinenr_fg = tohex(M.cursorlinenr_hl.fg)
-  M.visual_bg = tohex(M.visual.bg)
-  M.visual_fg = tohex(M.visual.fg)
-end
-
----save visual
--- local function set_visual_highlight()
---   vim.api.nvim_set_hl(M.ns_hl, "Visual", { bg = M.options.hl_blended.visual })
--- end
-
----restore visual
--- local function restore_visual_highlight()
---   unset_hl_ns()
---   -- vim.api.nvim_set_hl(0, "Visual", { fg = M.visual.fg, bg = M.visual.bg })
--- end
-
----restore highlights
--- local function restore_all_highlight()
--- unset_hl_ns(vim.api.nvim_get_current_buf())
-
--- if not M.cursorline_hl or not M.cursorlinenr_hl or not M.visual then
---   return
--- end
--- vim.api.nvim_set_hl(M.ns_hl, "CursorLine", { fg = M.cursorline_hl.fg, bg = M.cursorline_hl.bg })
--- vim.api.nvim_set_hl(M.ns_hl, "CursorLineNr", {
---   fg = M.cursorlinenr_hl.fg,
---   bold = M.cursorlinenr_hl.bold,
---   bg = M.cursorlinenr_hl.bg,
--- })
--- vim.api.nvim_set_hl(M.ns_hl, "Visual", { fg = M.visual.fg, bg = M.visual.bg })
+-- ---save highlights, also converts to hex string because reasons :)
+-- local function save_all_highlight()
+--   local tohex = require("moody.math").int_to_hex_string
+--   M.cursorline_hl = vim.api.nvim_get_hl(0, { name = "CursorLine" })
+--   M.cursorlinenr_hl = vim.api.nvim_get_hl(0, { name = "CursorLineNr" })
+--   M.visual = vim.api.nvim_get_hl(0, { name = "Visual" })
+--   M.cursorline_bg = tohex(M.cursorline_hl.bg)
+--   M.cursorline_fg = tohex(M.cursorline_hl.fg)
+--   M.cursorlinenr_bg = tohex(M.cursorlinenr_hl.bg)
+--   M.cursorlinenr_fg = tohex(M.cursorlinenr_hl.fg)
+--   M.visual_bg = tohex(M.visual.bg)
+--   M.visual_fg = tohex(M.visual.fg)
 -- end
 
 local function cache_colors()
@@ -61,54 +29,6 @@ local function cache_colors()
   M.options.hl_unblended = utils.hl_unblended()
   M.options.hl_blended = utils.hl_blended(M.options.blends)
 end
-
--- ---unsets cursorline for certain window
--- ---@param win number
--- local function unset_cursorline_winid(win)
---   if vim.fn.win_gettype(win) == "" then
---     vim.api.nvim_set_option_value("cursorline", false, { scope = "local", win = win })
---   end
--- end
-
--- ---sets cursorline for certain window
--- ---@param win number
--- local function set_cursorline_winid(win)
---   if vim.fn.win_gettype(win) == "" then
---     vim.api.nvim_set_option_value("cursorline", true, { scope = "local", win = win })
---   end
--- end
-
--- local function set_cursorline_cur_win()
---   set_cursorline_winid(vim.api.nvim_get_current_win())
--- end
---
--- ---unsets cursorline for all windows
--- local function unset_cursorline_all()
---   local utils = require("moody.utils")
---
---   local window_list = vim.api.nvim_list_wins()
---   -- utils.P(window_list)
---   for _, win in ipairs(window_list) do
---     if vim.fn.win_gettype(win) == "" then
---       -- utils.P("is normal window")
---       vim.api.nvim_set_option_value("cursorline", false, { scope = "local", win = win })
---     end
---   end
--- end
---
--- ---sets cursorline for all windows
--- local function set_cursorline_all()
---   local utils = require("moody.utils")
---
---   local window_list = vim.api.nvim_list_wins()
---   utils.P(window_list)
---   for _, win in ipairs(window_list) do
---     if vim.fn.win_gettype(win) == "" then
---       utils.P("is normal window")
---       vim.api.nvim_set_option_value("cursorline", true, { scope = "local", win = win })
---     end
---   end
--- end
 
 ---@type Config
 M.defaults = {
@@ -178,9 +98,6 @@ function M.__setup(options)
 
   local augroup = vim.api.nvim_create_augroup("MoodyGroupModeChanged", { clear = true })
   M.ns_hl = vim.api.nvim_create_namespace("MoodyHighlightNS")
-
-  -- save the current hl groups changed, so they can be restored for disabled filetypes
-  save_all_highlight()
 
   -- load up the "colour caches"
   cache_colors()
