@@ -94,7 +94,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
     blends = {
         normal = 0.2,
         insert = 0.2,
-        visual = 0.25,
+        visual = 0.2,
         command = 0.2,
         operator = 0.2,
         replace = 0.2,
