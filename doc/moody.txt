@@ -15,10 +15,11 @@ moody.setup({options})                                         *moody.setup()*
 
     Defaults: ~
     {
-      blend = {
+      blends = {
         command = 0.2,
         insert = 0.2,
         normal = 0.2,
+        operator = 0.2,
         replace = 0.2,
         select = 0.2,
         terminal = 0.2,
@@ -26,6 +27,17 @@ moody.setup({options})                                         *moody.setup()*
         visual = 0.2
       },
       bold_nr = true,
+      colors = {
+        command = "#EB788B",
+        insert = "#70CF67",
+        normal = "#00BFFF",
+        operator = "#FF8F40",
+        replace = "#E66767",
+        select = "#AD6FF7",
+        terminal = "#4CD4BD",
+        terminal_n = "#00BBCC",
+        visual = "#AD6FF7"
+      },
       disabled_filetypes = {}
     }
 
@@ -63,11 +75,13 @@ Config                                                                *Config*
 
 
     Fields: ~
-        {blend}              (table)    how much to blend colors with black
-                                        for the cursorline
-        {disabled_filetypes} (table)    List of buffers to disable this plugin
-                                        for
-        {bold_nr}            (boolean)  bold linenumbers or not
+        {blends} (Blends)  how much to blend colors with black for the
+                           cursorline
+        {colors} (Colors)  table of colours with respective mode
+
+
+M.defaults()                                                    *M.defaults()*
+
 
 
 
