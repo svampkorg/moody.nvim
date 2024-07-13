@@ -137,7 +137,7 @@ cursorlines in dapui windows changing colors all the time while switching modes.
 
 ## 🤔 Todo
 
-- Make moody ignore certain buffers, or filetypes. (It already ignores nvim.dapui files) ✅
+- ✅ Make moody ignore certain buffers, or filetypes.
 
 ## ⭐ Acknowledgments
 
