@@ -7,7 +7,7 @@ local M = {}
 ---@return boolean: true if filetype was in list of disabled filetypes
 local function is_disabled_filetype(filetype)
   local disabled_filetypes = require("moody.config").options.disabled_filetypes
-  return vim.tbl_contains(disabled_filetypes, filetype) or string.match(filetype, "dapui")
+  return vim.tbl_contains(disabled_filetypes, filetype)
 end
 
 local function cache_colors_setup_highlighs()
