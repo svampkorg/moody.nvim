@@ -38,7 +38,11 @@ moody.setup({options})                                         *moody.setup()*
         terminal_n = "#00BBCC",
         visual = "#AD6FF7"
       },
-      disabled_filetypes = {}
+      disabled_filetypes = {},
+      recording = {
+        enabled = true,
+        icon = "󰑋"
+      }
     }
 
     Parameters: ~
