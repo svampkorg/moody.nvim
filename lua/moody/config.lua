@@ -106,6 +106,14 @@ local function setup_hl_namespaces()
   M.ns_terminal_n = vim.api.nvim_create_namespace("Moody_TERMINAL_N_NS")
 end
 
+---@class Config
+---@field blends Blends: how much to blend colors with black for the cursorline
+---@field colors Colors: table of colours with respective mode
+---@field disabled_filetypes table<string>: List of buffers to disable this plugin for
+---@field bold_nr boolean: bold linenumbers or not
+---@field recording Recording: bold linenumbers or not
+M.options = {}
+
 ---@type Config
 M.defaults = {
   ---@class Blends
@@ -154,22 +162,14 @@ M.defaults = {
   disabled_filetypes = {},
   ---@type boolean
   bold_nr = true,
-  ---@type table<boolean, string>
+  ---@class Recording
+  ---@field enabled boolean: set to true to enable recording indicator
+  ---@field icon string: set an icon to show next to the register indicator
   recording = {
-    ---@type boolean
-    enabled = true,
-    ---@type string
+    enabled = false,
     icon = "󰑋",
   },
 }
-
----@class Config
----@field blends Blends: how much to blend colors with black for the cursorline
----@field colors Colors: table of colours with respective mode
----@field disabled_filetypes table<string>: List of buffers to disable this plugin for
----@field bold_nr boolean: bold linenumbers or not
----@field recording table: bold linenumbers or not
-M.options = {}
 
 --- We will not generate documentation for this function
 --- because it has `__` as prefix. This is the one exception
@@ -179,19 +179,19 @@ function M.__setup(options)
   M.options = vim.tbl_deep_extend("force", {}, M.defaults, options or {})
   local utils = require("moody.utils")
 
-  local augroup = vim.api.nvim_create_augroup("MoodyAuGroup", { clear = true })
-
+  local mode_group = vim.api.nvim_create_augroup("MoodyModeGroup", { clear = true })
+  local rec_group = vim.api.nvim_create_augroup("MoodyRecordingGroup", { clear = true })
   -- setup highlight namespaces for modes
   setup_hl_namespaces()
 
   -- load up the "colour caches" and setup highlights with it
   cache_colors_setup_highlighs()
 
-  if type(M.options.colors) == "table" then
-    for i, value in ipairs(M.options.colors) do
-      print("i: " .. i .. ", value: " .. value)
-    end
-  end
+  -- if type(M.options.colors) == "table" then
+  --   for i, value in ipairs(M.options.colors) do
+  --     print("i: " .. i .. ", value: " .. value)
+  --   end
+  -- end
 
   -- A few cases where cursorline is needed to be set to not
   -- have a default gray line before any modes are enterd.
@@ -203,7 +203,7 @@ function M.__setup(options)
     -- Added to catch when leaving telescope
     "InsertLeave",
   }, {
-    group = augroup,
+    group = mode_group,
     callback = function()
       if is_disabled_filetype(vim.bo.filetype) then
         vim.api.nvim_set_hl_ns(0)
@@ -217,7 +217,7 @@ function M.__setup(options)
   -- set highlight depending on mode changed
   vim.api.nvim_create_autocmd({ "ModeChanged" }, {
     desc = "set highlights depending on mode",
-    group = augroup,
+    group = mode_group,
     callback = function(event)
       -- restore all highlights if disabled
       if is_disabled_filetype(vim.bo.filetype) then
@@ -294,19 +294,19 @@ function M.__setup(options)
   })
 
   vim.api.nvim_create_autocmd({ "ColorScheme" }, {
-    group = augroup,
+    group = mode_group,
     callback = cache_colors_setup_highlighs,
   })
 
   -- only show cursorline in active window
   vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "BufWinEnter" }, {
-    group = augroup,
+    group = mode_group,
     callback = function()
       vim.wo.cursorline = true
     end,
   })
   vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
-    group = augroup,
+    group = mode_group,
     callback = function()
       vim.wo.cursorline = false
     end,
@@ -314,8 +314,9 @@ function M.__setup(options)
 
   if M.options.recording.enabled then
     vim.api.nvim_create_autocmd({ "RecordingEnter" }, {
-      group = vim.api.nvim_create_augroup("MoodyRecordingEntered", { clear = true }),
+      group = rec_group,
       callback = function(event)
+        utils.P(M.options.recording.enabled)
         if not get_virt_text() then
           return
         end
@@ -333,14 +334,14 @@ function M.__setup(options)
     })
 
     vim.api.nvim_create_autocmd({ "RecordingLeave" }, {
-      group = vim.api.nvim_create_augroup("MoodyRecordingLeft", { clear = true }),
+      group = rec_group,
       callback = function(event)
         M.del_sl_mark(event.buf)
       end,
     })
 
     vim.api.nvim_create_autocmd({ "CursorMoved" }, {
-      group = vim.api.nvim_create_augroup("MoodyCursorMovedGroup", { clear = true }),
+      group = rec_group,
       callback = function(event)
         if not get_virt_text() then
           return
@@ -357,7 +358,7 @@ function M.__setup(options)
     })
 
     vim.api.nvim_create_autocmd({ "WinLeave" }, {
-      group = vim.api.nvim_create_augroup("WinLeaveGroup", { clear = true }),
+      group = rec_group,
       callback = function(event)
         M.del_sl_mark(event.buf)
       end,

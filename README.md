@@ -70,9 +70,9 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
         bold_nr = true,
         -- you can turn on and off a feature which shows a little icon and
         -- registry number at the end of the CursorLine, for when you are
-        -- recording a macro!
+        -- recording a macro! Default is false.
         recording = {
-            enabled = true,
+            enabled = false,
             icon = "󰑋",
         },
     },
@@ -126,7 +126,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
     disabled_filetypes = {},
     bold_nr = true,
     recording = {
-        enabled = true,
+        enabled = false,
         icon = "󰑋",
     },
 }
