@@ -21,7 +21,7 @@ local function get_rec_text()
   if rec_reg == "" then
     return ""
   else
-    return "[" .. rec_reg .. "] "
+    return M.options.recording.pre_registry_text .. rec_reg .. M.options.recording.post_registry_text .. " "
   end
 end
 
@@ -165,9 +165,13 @@ M.defaults = {
   ---@class Recording
   ---@field enabled boolean: set to true to enable recording indicator
   ---@field icon string: set an icon to show next to the register indicator
+  ---@field pre_registry_text string: text or char to show before recording registry
+  ---@field post_registry_text string: text or char to show after recording registry
   recording = {
     enabled = false,
     icon = "󰑋",
+    pre_registry_text = "[",
+    post_registry_text = "]",
   },
 }
 
