@@ -41,7 +41,9 @@ moody.setup({options})                                         *moody.setup()*
       disabled_filetypes = {},
       recording = {
         enabled = false,
-        icon = "󰑋"
+        icon = "󰑋",
+        post_registry_text = "]",
+        pre_registry_text = "["
       }
     }
 
