@@ -81,7 +81,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
             icon = "󰑋",
             -- you can set some text to surround the recording registry char with
             -- or just set one to empty to maybe have just one letter, an arrow
-            -- perhaps! For example you could have! 󰑋    q :D
+            -- perhaps! For example recording to q, you could have! "󰑋    q" :D
             pre_registry_text = "[",
             post_registry_text = "]",
         },
@@ -146,7 +146,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 
 ## 🤯 Issues
 
-- There are no known issues atm 🐖
+- There are no known issues at the moment.
 
 ## 🤔 Todo
 
