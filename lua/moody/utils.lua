@@ -1,3 +1,8 @@
+---@class Utils
+---@field switch function: a switch kind of function, provide a lookup table and a key as case
+---@field hl_unblended function: a function to return a table of Colors from either HL groups or Config
+---@field is_disabled_filetype function: return true if filetype is disabled, false if not
+---@field hl_blended function: calculate new blends using either a number or Blend
 local M = {}
 
 local darken = require("moody.math").darken
@@ -15,7 +20,6 @@ function M.switch(choice, choices)
   return choices[choice] or choices["default"]
 end
 
----comment
 ---@return Colors
 function M.hl_unblended()
   return {
@@ -38,6 +42,7 @@ function M.is_disabled_filetype(filetype)
   return vim.tbl_contains(disabled_filetypes, filetype)
 end
 
+---@alias blend function
 --- get darkened variant of the HL colours
 --- @param blend table|number: number: a number between 0 and 1 used to darken.
 --- table: a table of modes with their respective blend
@@ -84,61 +89,6 @@ function M.hl_blended(blend)
     end
   end
 end
-
--- ---callback for use with the autocommand for mode change
--- ---@param blended table: table of blended mode colours
--- ---@param unblended table: table of unblended mode colours
--- ---@param bold_nr boolean: use bold chars for CursorLineNr
--- function M.hl_callback(blended, unblended, bold_nr)
---   if vim.fn.win_gettype() == "" then
---     M.switch(vim.api.nvim_get_mode().mode, {
---       ["n"] = function()
---         vim.api.nvim_set_hl(0, "CursorLine", { bg = blended.normal })
---         vim.api.nvim_set_hl(0, "CursorLineNr", { fg = unblended.normal, bold = bold_nr })
---       end,
---       ["i"] = function()
---         vim.api.nvim_set_hl(0, "CursorLine", { bg = blended.insert })
---         vim.api.nvim_set_hl(0, "CursorLineNr", { fg = unblended.insert, bold = bold_nr })
---       end,
---       ["v"] = function()
---         vim.api.nvim_set_hl(0, "CursorLine", { bg = blended.visual })
---         vim.api.nvim_set_hl(0, "CursorLineNr", { fg = unblended.visual, bold = bold_nr })
---       end,
---       ["V"] = function()
---         vim.api.nvim_set_hl(0, "CursorLine", { bg = blended.visual })
---         vim.api.nvim_set_hl(0, "CursorLineNr", { fg = unblended.visual, bold = bold_nr })
---       end,
---       [""] = function()
---         vim.api.nvim_set_hl(0, "CursorLine", { bg = blended.visual })
---         vim.api.nvim_set_hl(0, "CursorLineNr", { fg = unblended.visual, bold = bold_nr })
---       end,
---       ["x"] = function()
---         vim.api.nvim_set_hl(0, "CursorLine", { bg = blended.visual })
---         vim.api.nvim_set_hl(0, "CursorLineNr", { fg = unblended.visual, bold = bold_nr })
---       end,
---       ["c"] = function()
---         vim.api.nvim_set_hl(0, "CursorLine", { bg = blended.command })
---         vim.api.nvim_set_hl(0, "CursorLineNr", { fg = unblended.command, bold = bold_nr })
---       end,
---       ["r"] = function()
---         vim.api.nvim_set_hl(0, "CursorLine", { bg = blended.replace })
---         vim.api.nvim_set_hl(0, "CursorLineNr", { fg = unblended.replace, bold = bold_nr })
---       end,
---       ["s"] = function()
---         vim.api.nvim_set_hl(0, "CursorLine", { bg = blended.select })
---         vim.api.nvim_set_hl(0, "CursorLineNr", { fg = unblended.select, bold = bold_nr })
---       end,
---       ["t"] = function()
---         vim.api.nvim_set_hl(0, "CursorLine", { bg = blended.terminal })
---         vim.api.nvim_set_hl(0, "CursorLineNr", { fg = unblended.terminal, bold = bold_nr })
---       end,
---       ["default"] = function()
---         vim.api.nvim_set_hl(0, "CursorLine", { bg = blended.terminal_n })
---         vim.api.nvim_set_hl(0, "CursorLineNr", { fg = unblended.terminal_n, bold = bold_nr })
---       end,
---     })()
---   end
--- end
 
 --- short hand method for printing stuff in neovim
 --- @param v any

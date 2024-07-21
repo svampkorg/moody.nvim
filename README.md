@@ -19,7 +19,12 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 
 ## 🎥 Video
 
+#### Different modes, different CursorLine colours
 <https://github.com/svampkorg/moody.nvim/assets/99117038/792b37a0-dfc7-46cb-8e9a-146ed360a265>
+
+#### Recording macro indicator in CursorLine
+<https://github.com/user-attachments/assets/ebec6153-5aee-48af-a1dc-c53ca225503e>
+
 
 ## 💾 Install
 
@@ -29,7 +34,8 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
     "svampkorg/moody.nvim",
     event = { "ModeChanged", "BufWinEnter", "WinEnter" },
     dependencies = {
-        -- or wherever you setup your HL groups :)
+        -- or whatever "colorscheme" you use to setup your HL groups :)
+        -- Colours can also be set within setup, in which case this is redundant.
         "catppuccin/nvim",
     },
     opts = {
@@ -50,7 +56,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
         -- there are two ways to define colours for the different modes.
         -- one way is to define theme here in colors. Another way is to
         -- set them up with highlight groups. Any highlight group set takes
-        -- precedence over any colors defined here.
+        -- precedence over any colours defined here.
         colors = {
             normal = "#00BFFF",
             insert = "#70CF67",
@@ -67,6 +73,18 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
         disabled_filetypes = { "TelescopePrompt" },
         -- you can turn on or off bold characters for the line numbers
         bold_nr = true,
+        -- you can turn on and off a feature which shows a little icon and
+        -- registry number at the end of the CursorLine, for when you are
+        -- recording a macro! Default is false.
+        recording = {
+            enabled = false,
+            icon = "󰑋",
+            -- you can set some text to surround the recording registry char with
+            -- or just set one to empty to maybe have just one letter, an arrow
+            -- perhaps! For example recording to q, you could have! "󰑋    q" :D
+            pre_registry_text = "[",
+            post_registry_text = "]",
+        },
     },
   }
 ```
@@ -74,6 +92,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 ## 💺 Setup
 
 - Define your HL groups within your colorscheme. For example like this, in catppuccin highlight_overrides
+- Or set the colours in opts passed to setup
 ```lua
 {
     NormalMoody = { fg = C.blue },
@@ -102,6 +121,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
         terminal = 0.2,
         terminal_n = 0.2,
     },
+    -- will be overruled if HL groups are set
     colors = {
         normal = "#00BFFF",
         insert = "#70CF67",
@@ -115,25 +135,18 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
     },
     disabled_filetypes = {},
     bold_nr = true,
+    recording = {
+        enabled = false,
+        icon = "󰑋",
+        pre_registry_text = "[",
+        post_registry_text = "]",
+    },
 }
 ```
 
 ## 🤯 Issues
 
-- If you use nvim-dap with nvim-dap-ui it will be quite distracting with the
-cursorlines in dapui windows changing colors all the time while switching modes.
-
-    This autocommand will turn off cursorline for dapui and also show the dapui window
-    title in winbar for dapui windows:
-    ```lua
-	vim.api.nvim_create_autocmd("BufWinEnter", {
-		pattern = "*/DAP *",
-		callback = function()
-			vim.wo.cursorline = false
-			vim.wo.winbar = " %t"
-		end,
-	})
-    ```
+- There are no known issues at the moment.
 
 ## 🤔 Todo
 

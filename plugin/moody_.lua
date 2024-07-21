@@ -1,0 +1,21 @@
+-- ---@type Utils
+-- local utils = require("moody.utils")
+--
+-- ---@alias builtin table<function, Colors, table>
+-- local builtin = {
+--   ---@type blend
+--   ---provides a new set from colors with a new blend to black from 0 to 1
+--   ---@param blend number
+--   colors_blended = function(blend)
+--     return utils.hl_blended(blend)
+--   end,
+--   colors = utils.hl_unblended(),
+--   utils = utils,
+-- }
+-- ---@class BuiltinModule
+-- ---@field builtin builtin
+-- M = {}
+--
+-- M.builtin = builtin
+--
+-- return M

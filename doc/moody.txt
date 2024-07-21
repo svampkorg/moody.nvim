@@ -38,7 +38,13 @@ moody.setup({options})                                         *moody.setup()*
         terminal_n = "#00BBCC",
         visual = "#AD6FF7"
       },
-      disabled_filetypes = {}
+      disabled_filetypes = {},
+      recording = {
+        enabled = false,
+        icon = "󰑋",
+        post_registry_text = "]",
+        pre_registry_text = "["
+      }
     }
 
     Parameters: ~
@@ -78,10 +84,6 @@ Config                                                                *Config*
         {blends} (Blends)  how much to blend colors with black for the
                            cursorline
         {colors} (Colors)  table of colours with respective mode
-
-
-M.defaults()                                                    *M.defaults()*
-
 
 
 
