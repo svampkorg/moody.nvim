@@ -19,7 +19,12 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 
 ## 🎥 Video
 
+- Modes
 <https://github.com/svampkorg/moody.nvim/assets/99117038/792b37a0-dfc7-46cb-8e9a-146ed360a265>
+
+- Recording macro
+<https://github.com/user-attachments/assets/ebec6153-5aee-48af-a1dc-c53ca225503e>
+
 
 ## 💾 Install
 
