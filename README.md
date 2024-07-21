@@ -146,20 +146,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 
 ## 🤯 Issues
 
-- If you use nvim-dap with nvim-dap-ui it will be quite distracting with the
-cursorlines in dapui windows changing colors all the time while switching modes.
-
-    This autocommand will turn off cursorline for dapui and also show the dapui window
-    title in winbar for dapui windows:
-    ```lua
-	vim.api.nvim_create_autocmd("BufWinEnter", {
-		pattern = "*/DAP *",
-		callback = function()
-			vim.wo.cursorline = false
-			vim.wo.winbar = " %t"
-		end,
-	})
-    ```
+- There are no known issues atm 🐖
 
 ## 🤔 Todo
 
