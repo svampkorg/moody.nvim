@@ -328,7 +328,6 @@ function M.__setup(options)
     vim.api.nvim_create_autocmd({ "RecordingEnter" }, {
       group = rec_group,
       callback = function(event)
-        utils.P(M.options.recording.enabled)
         if not get_virt_text() then
           return
         end
