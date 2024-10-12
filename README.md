@@ -164,3 +164,4 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 - Plugins that do the same thing!
 - [modes](https://github.com/mvllow/modes.nvim)
 - [line-number-change-mode](https://github.com/sethen/line-number-change-mode.nvim)
+- [modicator](https://github.com/mawkler/modicator.nvim)
