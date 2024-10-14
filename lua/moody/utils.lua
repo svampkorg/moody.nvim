@@ -8,7 +8,7 @@ local M = {}
 local darken = require("moody.math").darken
 
 local tohex = require("moody.math").int_to_hex_string
-local options = require("moody.config").options
+-- local options = require("moody.config").options
 
 --- switch between string choice in table of string key, and table value choices
 --- A default case is not mandatory, but it will return nil if there is none :P
@@ -22,6 +22,7 @@ end
 
 ---@return Colors
 function M.hl_unblended()
+  local options = require("moody.config").options
   return {
     normal = tohex(vim.api.nvim_get_hl(0, { name = "NormalMoody" }).fg) or options.colors.normal,
     insert = tohex(vim.api.nvim_get_hl(0, { name = "InsertMoody" }).fg) or options.colors.insert,
