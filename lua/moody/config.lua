@@ -52,39 +52,80 @@ local function cache_colors_setup_highlighs()
   local utils = require("moody.utils")
   M.options.hl_unblended = utils.hl_unblended()
   M.options.hl_blended = utils.hl_blended(M.options.blends)
+  local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
 
   vim.api.nvim_set_hl(M.ns_normal, "CursorLine", { bg = M.options.hl_blended.normal })
   vim.api.nvim_set_hl(M.ns_normal, "CursorLineInverse", { fg = M.options.hl_blended.normal })
   vim.api.nvim_set_hl(M.ns_normal, "CursorLineNr", { fg = M.options.hl_unblended.normal, bold = M.options.bold_nr })
+  vim.api.nvim_set_hl(
+    M.ns_normal,
+    "StatusLineMode",
+    { fg = M.options.hl_unblended.normal, bold = M.options.bold_nr, bg = statusLineHl.bg }
+  )
 
   vim.api.nvim_set_hl(M.ns_insert, "CursorLine", { bg = M.options.hl_blended.insert })
   vim.api.nvim_set_hl(M.ns_insert, "CursorLineInverse", { fg = M.options.hl_blended.insert })
   vim.api.nvim_set_hl(M.ns_insert, "CursorLineNr", { fg = M.options.hl_unblended.insert, bold = M.options.bold_nr })
+  vim.api.nvim_set_hl(
+    M.ns_insert,
+    "StatusLineMode",
+    { fg = M.options.hl_unblended.insert, bold = M.options.bold_nr, bg = statusLineHl.bg }
+  )
 
   vim.api.nvim_set_hl(M.ns_visual, "Visual", { bg = M.options.hl_blended.visual })
   vim.api.nvim_set_hl(M.ns_visual, "CursorLine", { bg = M.options.hl_blended.visual })
   vim.api.nvim_set_hl(M.ns_visual, "CursorLineInverse", { fg = M.options.hl_blended.visual })
   vim.api.nvim_set_hl(M.ns_visual, "CursorLineNr", { fg = M.options.hl_unblended.visual, bold = M.options.bold_nr })
+  vim.api.nvim_set_hl(
+    M.ns_visual,
+    "StatusLineMode",
+    { fg = M.options.hl_unblended.visual, bold = M.options.bold_nr, bg = statusLineHl.bg }
+  )
 
   vim.api.nvim_set_hl(M.ns_command, "CursorLine", { bg = M.options.hl_blended.command })
   vim.api.nvim_set_hl(M.ns_command, "CursorLineInverse", { fg = M.options.hl_blended.command })
   vim.api.nvim_set_hl(M.ns_command, "CursorLineNr", { fg = M.options.hl_unblended.command, bold = M.options.bold_nr })
+  vim.api.nvim_set_hl(
+    M.ns_command,
+    "StatusLineMode",
+    { fg = M.options.hl_unblended.command, bold = M.options.bold_nr, bg = statusLineHl.bg }
+  )
 
   vim.api.nvim_set_hl(M.ns_operator, "CursorLine", { bg = M.options.hl_blended.operator })
   vim.api.nvim_set_hl(M.ns_operator, "CursorLineInverse", { fg = M.options.hl_blended.operator })
   vim.api.nvim_set_hl(M.ns_operator, "CursorLineNr", { fg = M.options.hl_unblended.operator, bold = M.options.bold_nr })
+  vim.api.nvim_set_hl(
+    M.ns_operator,
+    "StatusLineMode",
+    { fg = M.options.hl_unblended.operator, bold = M.options.bold_nr, bg = statusLineHl.bg }
+  )
 
   vim.api.nvim_set_hl(M.ns_replace, "CursorLine", { bg = M.options.hl_blended.replace })
   vim.api.nvim_set_hl(M.ns_replace, "CursorLineInverse", { fg = M.options.hl_blended.replace })
   vim.api.nvim_set_hl(M.ns_replace, "CursorLineNr", { fg = M.options.hl_unblended.replace, bold = M.options.bold_nr })
+  vim.api.nvim_set_hl(
+    M.ns_replace,
+    "StatusLineMode",
+    { fg = M.options.hl_unblended.replace, bold = M.options.bold_nr, bg = statusLineHl.bg }
+  )
 
   vim.api.nvim_set_hl(M.ns_select, "CursorLine", { bg = M.options.hl_blended.select })
   vim.api.nvim_set_hl(M.ns_select, "CursorLineInverse", { fg = M.options.hl_blended.select })
   vim.api.nvim_set_hl(M.ns_select, "CursorLineNr", { fg = M.options.hl_unblended.select, bold = M.options.bold_nr })
+  vim.api.nvim_set_hl(
+    M.ns_select,
+    "StatusLineMode",
+    { fg = M.options.hl_unblended.select, bold = M.options.bold_nr, bg = statusLineHl.bg }
+  )
 
   vim.api.nvim_set_hl(M.ns_terminal, "CursorLine", { bg = M.options.hl_blended.terminal })
   vim.api.nvim_set_hl(M.ns_terminal, "CursorLineInverse", { fg = M.options.hl_blended.terminal })
   vim.api.nvim_set_hl(M.ns_terminal, "CursorLineNr", { fg = M.options.hl_unblended.terminal, bold = M.options.bold_nr })
+  vim.api.nvim_set_hl(
+    M.ns_terminal,
+    "StatusLineMode",
+    { fg = M.options.hl_unblended.terminal, bold = M.options.bold_nr, bg = statusLineHl.bg }
+  )
 
   vim.api.nvim_set_hl(M.ns_terminal_n, "CursorLine", { bg = M.options.hl_blended.terminal_n })
   vim.api.nvim_set_hl(M.ns_terminal_n, "CursorLineInverse", { fg = M.options.hl_blended.terminal_n })
@@ -92,6 +133,11 @@ local function cache_colors_setup_highlighs()
     fg = M.options.hl_unblended.terminal_n,
     bold = M.options.bold_nr,
   })
+  vim.api.nvim_set_hl(
+    M.ns_terminal_n,
+    "StatusLineMode",
+    { fg = M.options.hl_unblended.terminal_n, bold = M.options.bold_nr, bg = statusLineHl.bg }
+  )
 end
 
 local function setup_hl_namespaces()
