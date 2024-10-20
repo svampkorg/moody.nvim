@@ -139,17 +139,17 @@ local function cache_colors_setup_highlighs()
     { fg = M.options.hl_unblended.terminal_n, bold = M.options.bold_nr, bg = statusLineHl.bg }
   )
 
-  if M.options.extend_cursorline then
-    vim.api.nvim_set_hl(M.ns_normal, "CursorLineFold", { bg = M.options.hl_blended.normal })
-    vim.api.nvim_set_hl(M.ns_insert, "CursorLineFold", { bg = M.options.hl_blended.normal })
-    vim.api.nvim_set_hl(M.ns_visual, "CursorLineFold", { bg = M.options.hl_blended.normal })
-    vim.api.nvim_set_hl(M.ns_command, "CursorLineFold", { bg = M.options.hl_blended.normal })
-    vim.api.nvim_set_hl(M.ns_operator, "CursorLineFold", { bg = M.options.hl_blended.normal })
-    vim.api.nvim_set_hl(M.ns_replace, "CursorLineFold", { bg = M.options.hl_blended.normal })
-    vim.api.nvim_set_hl(M.ns_select, "CursorLineFold", { bg = M.options.hl_blended.normal })
-    vim.api.nvim_set_hl(M.ns_terminal, "CursorLineFold", { bg = M.options.hl_blended.normal })
-    vim.api.nvim_set_hl(M.ns_terminal_n, "CursorLineFold", { bg = M.options.hl_blended.normal })
-  end
+  -- if M.options.extend_cursorline then
+  --   vim.api.nvim_set_hl(M.ns_normal, "CursorLineFold", { bg = M.options.hl_blended.normal })
+  --   vim.api.nvim_set_hl(M.ns_insert, "CursorLineFold", { bg = M.options.hl_blended.normal })
+  --   vim.api.nvim_set_hl(M.ns_visual, "CursorLineFold", { bg = M.options.hl_blended.normal })
+  --   vim.api.nvim_set_hl(M.ns_command, "CursorLineFold", { bg = M.options.hl_blended.normal })
+  --   vim.api.nvim_set_hl(M.ns_operator, "CursorLineFold", { bg = M.options.hl_blended.normal })
+  --   vim.api.nvim_set_hl(M.ns_replace, "CursorLineFold", { bg = M.options.hl_blended.normal })
+  --   vim.api.nvim_set_hl(M.ns_select, "CursorLineFold", { bg = M.options.hl_blended.normal })
+  --   vim.api.nvim_set_hl(M.ns_terminal, "CursorLineFold", { bg = M.options.hl_blended.normal })
+  --   vim.api.nvim_set_hl(M.ns_terminal_n, "CursorLineFold", { bg = M.options.hl_blended.normal })
+  -- end
 end
 
 local function setup_hl_namespaces()
