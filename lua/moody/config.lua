@@ -138,6 +138,18 @@ local function cache_colors_setup_highlighs()
     "StatusLineMode",
     { fg = M.options.hl_unblended.terminal_n, bold = M.options.bold_nr, bg = statusLineHl.bg }
   )
+
+  if M.options.extend_cursorline then
+    vim.api.nvim_set_hl(M.ns_normal, "CursorLineFold", { bg = M.options.hl_blended.normal })
+    vim.api.nvim_set_hl(M.ns_insert, "CursorLineFold", { bg = M.options.hl_blended.normal })
+    vim.api.nvim_set_hl(M.ns_visual, "CursorLineFold", { bg = M.options.hl_blended.normal })
+    vim.api.nvim_set_hl(M.ns_command, "CursorLineFold", { bg = M.options.hl_blended.normal })
+    vim.api.nvim_set_hl(M.ns_operator, "CursorLineFold", { bg = M.options.hl_blended.normal })
+    vim.api.nvim_set_hl(M.ns_replace, "CursorLineFold", { bg = M.options.hl_blended.normal })
+    vim.api.nvim_set_hl(M.ns_select, "CursorLineFold", { bg = M.options.hl_blended.normal })
+    vim.api.nvim_set_hl(M.ns_terminal, "CursorLineFold", { bg = M.options.hl_blended.normal })
+    vim.api.nvim_set_hl(M.ns_terminal_n, "CursorLineFold", { bg = M.options.hl_blended.normal })
+  end
 end
 
 local function setup_hl_namespaces()
@@ -157,6 +169,7 @@ end
 ---@field colors Colors: table of colours with respective mode
 ---@field disabled_filetypes table<string>: List of buffers to disable this plugin for
 ---@field bold_nr boolean: bold linenumbers or not
+---@field extend_cursorline boolean: extend the cursorline into signcolumn
 ---@field recording Recording: bold linenumbers or not
 M.options = {}
 
@@ -208,6 +221,8 @@ M.defaults = {
   disabled_filetypes = {},
   ---@type boolean
   bold_nr = true,
+  ---@type boolean
+  extend_cursorline = true,
   ---@class Recording
   ---@field enabled boolean: set to true to enable recording indicator
   ---@field icon string: set an icon to show next to the register indicator
