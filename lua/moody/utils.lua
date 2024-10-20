@@ -99,13 +99,43 @@ function M.P(v)
   return v
 end
 
---- change the property of a highlight group
---- @param ns integer
---- @param group string
---- @param property table
-function M.changeProperty(ns, group, property)
-  local old_hl = vim.api.nvim_get_hl(ns and ns or 0, { name = group })
-  local new_hl = vim.tbl_extend("force", old_hl, property)
-  vim.api.nvim_set_hl(ns and ns or 0, group, new_hl)
+--- Updates a highlight group.
+---
+--- @param ns integer Namespace id for this highlight `nvim_create_namespace()`.
+---              Use 0 to set a highlight group globally `:highlight`.
+---              Highlights from non-global namespaces are not active by
+---              default, use `nvim_set_hl_ns()` or `nvim_win_set_hl_ns()` to
+---              activate them.
+--- @param name string Highlight group name, e.g. "ErrorMsg"
+--- @param val vim.api.keyset.highlight Highlight definition map, accepts the following keys:
+---            • fg: color name or "#RRGGBB", see note.
+---            • bg: color name or "#RRGGBB", see note.
+---            • sp: color name or "#RRGGBB"
+---            • blend: integer between 0 and 100
+---            • bold: boolean
+---            • standout: boolean
+---            • underline: boolean
+---            • undercurl: boolean
+---            • underdouble: boolean
+---            • underdotted: boolean
+---            • underdashed: boolean
+---            • strikethrough: boolean
+---            • italic: boolean
+---            • reverse: boolean
+---            • nocombine: boolean
+---            • link: name of another highlight group to link to, see
+---              `:hi-link`.
+---            • default: Don't override existing definition `:hi-default`
+---            • ctermfg: Sets foreground of cterm color `ctermfg`
+---            • ctermbg: Sets background of cterm color `ctermbg`
+---            • cterm: cterm attribute map, like `highlight-args`. If not
+---              set, cterm attributes will match those from the attribute map
+---              documented above.
+---            • force: if true force update the highlight group when it
+---              exists.
+function M.change_hl_property(ns, name, val)
+  local old_hl = vim.api.nvim_get_hl(ns and ns or 0, { name = name })
+  local new_hl = vim.tbl_extend("force", old_hl, val)
+  vim.api.nvim_set_hl(ns and ns or 0, name, new_hl)
 end
 return M
