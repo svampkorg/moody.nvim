@@ -39,6 +39,7 @@ moody.setup({options})                                         *moody.setup()*
         visual = "#AD6FF7"
       },
       disabled_filetypes = {},
+      extend_cursorline = true,
       recording = {
         enabled = false,
         icon = "󰑋",
