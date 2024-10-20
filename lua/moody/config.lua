@@ -63,8 +63,9 @@ local function cache_colors_setup_highlighs()
     bg = extend and M.options.hl_blended.normal or "none",
   })
   if extend then
-    vim.api.nvim_set_hl(M.ns_normal, "CursorLineSign", { bg = extend and M.options.hl_blended.normal or "none" })
-    vim.api.nvim_set_hl(M.ns_normal, "CursorLineFold", { bg = extend and M.options.hl_blended.normal or "none" })
+    utils.changeProperty(M.ns_normal, "CursorLineSign", { bg = extend and M.options.hl_blended.normal or "none" })
+    utils.changeProperty(M.ns_normal, "CursorLineFold", { bg = extend and M.options.hl_blended.normal or "none" })
+    utils.changeProperty(M.ns_normal, "CursorLineNr", { bg = extend and M.options.hl_blended.normal or "none" })
   end
   vim.api.nvim_set_hl(
     M.ns_normal,
@@ -80,8 +81,9 @@ local function cache_colors_setup_highlighs()
     bg = extend and M.options.hl_blended.insert or "none",
   })
   if extend then
-    vim.api.nvim_set_hl(M.ns_insert, "CursorLineSign", { bg = extend and M.options.hl_blended.insert or "none" })
-    vim.api.nvim_set_hl(M.ns_insert, "CursorLineFold", { bg = extend and M.options.hl_blended.insert or "none" })
+    utils.changeProperty(M.ns_insert, "CursorLineSign", { bg = extend and M.options.hl_blended.insert or "none" })
+    utils.changeProperty(M.ns_insert, "CursorLineFold", { bg = extend and M.options.hl_blended.insert or "none" })
+    utils.changeProperty(M.ns_insert, "CursorLineNr", { bg = extend and M.options.hl_blended.insert or "none" })
   end
   vim.api.nvim_set_hl(
     M.ns_insert,
