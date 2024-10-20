@@ -99,4 +99,13 @@ function M.P(v)
   return v
 end
 
+--- change the property of a highlight group
+--- @param ns integer
+--- @param group string
+--- @param property table
+function M.changeProperty(ns, group, property)
+  local old_hl = vim.api.nvim_get_hl(ns and ns or 0, { name = group })
+  local new_hl = vim.tbl_extend("force", old_hl, property)
+  vim.api.nvim_set_hl(ns and ns or 0, group, new_hl)
+end
 return M
