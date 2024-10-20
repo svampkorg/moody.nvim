@@ -3,6 +3,18 @@
 ---@field options Config: config table extending defaults
 local M = {}
 
+M.modes = {
+  "normal",
+  "insert",
+  "visual",
+  "command",
+  "operator",
+  "replace",
+  "select",
+  "terminal",
+  "terminal_n",
+}
+
 M.sl_mark = vim.api.nvim_create_namespace("moodyline")
 
 M.set_sl_mark = function(buffer, line, col, opts)
@@ -48,115 +60,67 @@ local function is_disabled_filetype(filetype)
   return vim.tbl_contains(disabled_filetypes, filetype)
 end
 
-local function cache_colors_setup_highlighs()
+-- local function setup_hl(ns, name, val)
+--   vim.api.nvim_set_hl(ns and ns or 0, name, val)
+-- end
+
+local function setup_ns_and_hlgroups()
   local utils = require("moody.utils")
+  local hl = utils.change_hl_property
   M.options.hl_unblended = utils.hl_unblended()
   M.options.hl_blended = utils.hl_blended(M.options.blends)
   local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
   local extend = M.options.extend_cursorline
 
-  vim.api.nvim_set_hl(M.ns_normal, "CursorLine", { bg = M.options.hl_blended.normal })
-  vim.api.nvim_set_hl(M.ns_normal, "CursorLineInverse", { fg = M.options.hl_blended.normal })
-  vim.api.nvim_set_hl(M.ns_normal, "CursorLineNr", {
-    fg = M.options.hl_unblended.normal,
-    bold = M.options.bold_nr,
-    bg = extend and M.options.hl_blended.normal or "none",
-  })
-  if extend then
-    utils.changeProperty(M.ns_normal, "CursorLineSign", { bg = extend and M.options.hl_blended.normal or "none" })
-    utils.changeProperty(M.ns_normal, "CursorLineFold", { bg = extend and M.options.hl_blended.normal or "none" })
-    utils.changeProperty(M.ns_normal, "CursorLineNr", { bg = extend and M.options.hl_blended.normal or "none" })
-  end
-  vim.api.nvim_set_hl(
-    M.ns_normal,
-    "StatusLineMode",
-    { fg = M.options.hl_unblended.normal, bold = M.options.bold_nr, bg = statusLineHl.bg }
-  )
+  for _, mode in ipairs(M.modes) do
+    M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
 
-  vim.api.nvim_set_hl(M.ns_insert, "CursorLine", { bg = M.options.hl_blended.insert })
-  vim.api.nvim_set_hl(M.ns_insert, "CursorLineInverse", { fg = M.options.hl_blended.insert })
-  vim.api.nvim_set_hl(M.ns_insert, "CursorLineNr", {
-    fg = M.options.hl_unblended.insert,
-    bold = M.options.bold_nr,
-    bg = extend and M.options.hl_blended.insert or "none",
-  })
-  if extend then
-    utils.changeProperty(M.ns_insert, "CursorLineSign", { bg = extend and M.options.hl_blended.insert or "none" })
-    utils.changeProperty(M.ns_insert, "CursorLineFold", { bg = extend and M.options.hl_blended.insert or "none" })
-    utils.changeProperty(M.ns_insert, "CursorLineNr", { bg = extend and M.options.hl_blended.insert or "none" })
-  end
-  vim.api.nvim_set_hl(
-    M.ns_insert,
-    "StatusLineMode",
-    { fg = M.options.hl_unblended.insert, bold = M.options.bold_nr, bg = statusLineHl.bg }
-  )
+    hl(M["ns_" .. mode], "CursorLine", { bg = M.options.hl_blended[mode] })
+    hl(M["ns_" .. mode], "CursorLineInverse", { fg = M.options.hl_blended[mode] })
 
+    hl(M["ns_" .. mode], "CursorLineNr", {
+      fg = M.options.hl_unblended[mode],
+      bold = M.options.bold_nr,
+      bg = "none",
+    })
+
+    hl(M["ns_" .. mode], "LineNrOffset", {
+      fg = M.options.hl_blended[mode],
+      bold = M.options.bold_nr,
+      bg = "none",
+    })
+
+    if extend then
+      hl(M["ns_" .. mode], "CursorLineNr", {
+        fg = M.options.hl_unblended[mode],
+        bold = M.options.bold_nr,
+        bg = M.options.hl_blended[mode],
+        force = true,
+      })
+      hl(M["ns_" .. mode], "CursorLineFold", {
+        fg = M.options.hl_unblended[mode],
+        bold = M.options.bold_nr,
+        bg = M.options.hl_blended[mode],
+        force = true,
+      })
+      hl(M["ns_" .. mode], "CursorLineSign", {
+        fg = M.options.hl_unblended[mode],
+        bold = M.options.bold_nr,
+        bg = M.options.hl_blended[mode],
+        force = true,
+      })
+    end
+
+    hl(
+      M["ns_" .. mode],
+      "StatusLineMode",
+      { fg = M.options.hl_unblended[mode], bold = M.options.bold_nr, bg = statusLineHl.bg }
+    )
+  end
+
+  -- visual need special treatment
+  ---@diagnostic disable-next-line: undefined-field
   vim.api.nvim_set_hl(M.ns_visual, "Visual", { bg = M.options.hl_blended.visual })
-  vim.api.nvim_set_hl(M.ns_visual, "CursorLine", { bg = M.options.hl_blended.visual })
-  vim.api.nvim_set_hl(M.ns_visual, "CursorLineInverse", { fg = M.options.hl_blended.visual })
-  vim.api.nvim_set_hl(M.ns_visual, "CursorLineNr", { fg = M.options.hl_unblended.visual, bold = M.options.bold_nr })
-  vim.api.nvim_set_hl(
-    M.ns_visual,
-    "StatusLineMode",
-    { fg = M.options.hl_unblended.visual, bold = M.options.bold_nr, bg = statusLineHl.bg }
-  )
-
-  vim.api.nvim_set_hl(M.ns_command, "CursorLine", { bg = M.options.hl_blended.command })
-  vim.api.nvim_set_hl(M.ns_command, "CursorLineInverse", { fg = M.options.hl_blended.command })
-  vim.api.nvim_set_hl(M.ns_command, "CursorLineNr", { fg = M.options.hl_unblended.command, bold = M.options.bold_nr })
-  vim.api.nvim_set_hl(
-    M.ns_command,
-    "StatusLineMode",
-    { fg = M.options.hl_unblended.command, bold = M.options.bold_nr, bg = statusLineHl.bg }
-  )
-
-  vim.api.nvim_set_hl(M.ns_operator, "CursorLine", { bg = M.options.hl_blended.operator })
-  vim.api.nvim_set_hl(M.ns_operator, "CursorLineInverse", { fg = M.options.hl_blended.operator })
-  vim.api.nvim_set_hl(M.ns_operator, "CursorLineNr", { fg = M.options.hl_unblended.operator, bold = M.options.bold_nr })
-  vim.api.nvim_set_hl(
-    M.ns_operator,
-    "StatusLineMode",
-    { fg = M.options.hl_unblended.operator, bold = M.options.bold_nr, bg = statusLineHl.bg }
-  )
-
-  vim.api.nvim_set_hl(M.ns_replace, "CursorLine", { bg = M.options.hl_blended.replace })
-  vim.api.nvim_set_hl(M.ns_replace, "CursorLineInverse", { fg = M.options.hl_blended.replace })
-  vim.api.nvim_set_hl(M.ns_replace, "CursorLineNr", { fg = M.options.hl_unblended.replace, bold = M.options.bold_nr })
-  vim.api.nvim_set_hl(
-    M.ns_replace,
-    "StatusLineMode",
-    { fg = M.options.hl_unblended.replace, bold = M.options.bold_nr, bg = statusLineHl.bg }
-  )
-
-  vim.api.nvim_set_hl(M.ns_select, "CursorLine", { bg = M.options.hl_blended.select })
-  vim.api.nvim_set_hl(M.ns_select, "CursorLineInverse", { fg = M.options.hl_blended.select })
-  vim.api.nvim_set_hl(M.ns_select, "CursorLineNr", { fg = M.options.hl_unblended.select, bold = M.options.bold_nr })
-  vim.api.nvim_set_hl(
-    M.ns_select,
-    "StatusLineMode",
-    { fg = M.options.hl_unblended.select, bold = M.options.bold_nr, bg = statusLineHl.bg }
-  )
-
-  vim.api.nvim_set_hl(M.ns_terminal, "CursorLine", { bg = M.options.hl_blended.terminal })
-  vim.api.nvim_set_hl(M.ns_terminal, "CursorLineInverse", { fg = M.options.hl_blended.terminal })
-  vim.api.nvim_set_hl(M.ns_terminal, "CursorLineNr", { fg = M.options.hl_unblended.terminal, bold = M.options.bold_nr })
-  vim.api.nvim_set_hl(
-    M.ns_terminal,
-    "StatusLineMode",
-    { fg = M.options.hl_unblended.terminal, bold = M.options.bold_nr, bg = statusLineHl.bg }
-  )
-
-  vim.api.nvim_set_hl(M.ns_terminal_n, "CursorLine", { bg = M.options.hl_blended.terminal_n })
-  vim.api.nvim_set_hl(M.ns_terminal_n, "CursorLineInverse", { fg = M.options.hl_blended.terminal_n })
-  vim.api.nvim_set_hl(M.ns_terminal_n, "CursorLineNr", {
-    fg = M.options.hl_unblended.terminal_n,
-    bold = M.options.bold_nr,
-  })
-  vim.api.nvim_set_hl(
-    M.ns_terminal_n,
-    "StatusLineMode",
-    { fg = M.options.hl_unblended.terminal_n, bold = M.options.bold_nr, bg = statusLineHl.bg }
-  )
 
   -- if M.options.extend_cursorline then
   --   vim.api.nvim_set_hl(M.ns_normal, "CursorLineFold", { bg = M.options.hl_blended.normal })
@@ -171,17 +135,21 @@ local function cache_colors_setup_highlighs()
   -- end
 end
 
-local function setup_hl_namespaces()
-  M.ns_normal = vim.api.nvim_create_namespace("Moody_NORMAL_NS")
-  M.ns_insert = vim.api.nvim_create_namespace("Moody_INSERT_NS")
-  M.ns_visual = vim.api.nvim_create_namespace("Moody_VISUAL_NS")
-  M.ns_command = vim.api.nvim_create_namespace("Moody_COMMAND_NS")
-  M.ns_operator = vim.api.nvim_create_namespace("Moody_OPERATOR_NS")
-  M.ns_replace = vim.api.nvim_create_namespace("Moody_REPLACE_NS")
-  M.ns_select = vim.api.nvim_create_namespace("Moody_SELECT_NS")
-  M.ns_terminal = vim.api.nvim_create_namespace("Moody_TERMINAL_NS")
-  M.ns_terminal_n = vim.api.nvim_create_namespace("Moody_TERMINAL_N_NS")
-end
+-- local function setup_hl_namespaces()
+--   for _, mode in ipairs(M.modes) do
+--     M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
+--   end
+--
+--   -- M.ns_normal = vim.api.nvim_create_namespace("Moody_NORMAL_NS")
+--   -- M.ns_insert = vim.api.nvim_create_namespace("Moody_INSERT_NS")
+--   -- M.ns_visual = vim.api.nvim_create_namespace("Moody_VISUAL_NS")
+--   -- M.ns_command = vim.api.nvim_create_namespace("Moody_COMMAND_NS")
+--   -- M.ns_operator = vim.api.nvim_create_namespace("Moody_OPERATOR_NS")
+--   -- M.ns_replace = vim.api.nvim_create_namespace("Moody_REPLACE_NS")
+--   -- M.ns_select = vim.api.nvim_create_namespace("Moody_SELECT_NS")
+--   -- M.ns_terminal = vim.api.nvim_create_namespace("Moody_TERMINAL_NS")
+--   -- M.ns_terminal_n = vim.api.nvim_create_namespace("Moody_TERMINAL_N_NS")
+-- end
 
 ---@class Config
 ---@field blends Blends: how much to blend colors with black for the cursorline
@@ -241,7 +209,7 @@ M.defaults = {
   ---@type boolean
   bold_nr = true,
   ---@type boolean
-  extend_cursorline = true,
+  extend_cursorline = false,
   ---@class Recording
   ---@field enabled boolean: set to true to enable recording indicator
   ---@field icon string: set an icon to show next to the register indicator
@@ -265,17 +233,8 @@ function M.__setup(options)
 
   local mode_group = vim.api.nvim_create_augroup("MoodyModeGroup", { clear = true })
   local rec_group = vim.api.nvim_create_augroup("MoodyRecordingGroup", { clear = true })
-  -- setup highlight namespaces for modes
-  setup_hl_namespaces()
-
   -- load up the "colour caches" and setup highlights with it
-  cache_colors_setup_highlighs()
-
-  -- if type(M.options.colors) == "table" then
-  --   for i, value in ipairs(M.options.colors) do
-  --     print("i: " .. i .. ", value: " .. value)
-  --   end
-  -- end
+  setup_ns_and_hlgroups()
 
   -- A few cases where cursorline is needed to be set to not
   -- have a default gray line before any modes are enterd.
@@ -294,6 +253,7 @@ function M.__setup(options)
         return
       end
 
+      ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_set_hl_ns(M.ns_normal)
     end,
   })
@@ -318,50 +278,62 @@ function M.__setup(options)
 
       utils.switch(mode, {
         ["n"] = function()
+          ---@diagnostic disable-next-line: undefined-field
           vim.api.nvim_win_set_hl_ns(win, M.ns_normal)
           -- debugText = "normal"
         end,
         ["i"] = function()
+          ---@diagnostic disable-next-line: undefined-field
           vim.api.nvim_win_set_hl_ns(win, M.ns_insert)
           -- debugText = "insert"
         end,
         ["ix"] = function()
+          ---@diagnostic disable-next-line: undefined-field
           vim.api.nvim_win_set_hl_ns(win, M.ns_insert)
           -- debugText = "insert-completion"
         end,
         ["v"] = function()
+          ---@diagnostic disable-next-line: undefined-field
           vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
           -- debugText = "visual"
         end,
         ["V"] = function()
+          ---@diagnostic disable-next-line: undefined-field
           vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
           -- debugText = "visual-line"
         end,
         [""] = function()
+          ---@diagnostic disable-next-line: undefined-field
           vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
           -- debugText = "visual-block"
         end,
         ["c"] = function()
+          ---@diagnostic disable-next-line: undefined-field
           vim.api.nvim_win_set_hl_ns(win, M.ns_command)
           -- debugText = "command"
         end,
         ["r"] = function()
+          ---@diagnostic disable-next-line: undefined-field
           vim.api.nvim_win_set_hl_ns(win, M.ns_replace)
           -- debugText = "replace"
         end,
         ["s"] = function()
+          ---@diagnostic disable-next-line: undefined-field
           vim.api.nvim_win_set_hl_ns(win, M.ns_select)
           -- debugText = "select"
         end,
         ["t"] = function()
+          ---@diagnostic disable-next-line: undefined-field
           vim.api.nvim_win_set_hl_ns(win, M.ns_terminal)
           -- debugText = "terminal"
         end,
         ["nt"] = function()
+          ---@diagnostic disable-next-line: undefined-field
           vim.api.nvim_win_set_hl_ns(win, M.ns_terminal_n)
           -- debugText = "normal-terminal"
         end,
         ["no"] = function()
+          ---@diagnostic disable-next-line: undefined-field
           vim.api.nvim_win_set_hl_ns(win, M.ns_operator)
           -- debugText = "operator-pending"
         end,
@@ -379,7 +351,7 @@ function M.__setup(options)
 
   vim.api.nvim_create_autocmd({ "ColorScheme" }, {
     group = mode_group,
-    callback = cache_colors_setup_highlighs,
+    callback = setup_ns_and_hlgroups,
   })
 
   -- only show cursorline in active window
