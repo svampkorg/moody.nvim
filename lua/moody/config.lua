@@ -91,50 +91,6 @@ local function is_disabled_filetype(filetype)
   return vim.tbl_contains(disabled_filetypes, filetype)
 end
 
-local fix_sign_hl = function(mode)
-  local ok = vim.api.nvim_get_hl(0, { name = "DiagnosticSignOk" })
-  local hint = vim.api.nvim_get_hl(0, { name = "DiagnosticSignHint" })
-  local info = vim.api.nvim_get_hl(0, { name = "DiagnosticSignInfo" })
-  local warn = vim.api.nvim_get_hl(0, { name = "DiagnosticSignWarn" })
-  local error = vim.api.nvim_get_hl(0, { name = "DiagnosticSignError" })
-
-  local added = vim.api.nvim_get_hl(0, { name = "@diff.plus" })
-  local changed = vim.api.nvim_get_hl(0, { name = "@diff.delta" })
-  local removed = vim.api.nvim_get_hl(0, { name = "@diff.minus" })
-
-  local addedColor = tohex(added.fg) or "#a9dc76"
-  local changedColor = tohex(changed.fg) or "#ffd866"
-  local removedColor = tohex(removed.fg) or "#ff6188"
-
-  local normalHL = vim.api.nvim_get_hl(0, { name = "Normal" })
-  local normalBG = tohex(normalHL.bg)
-  -- local normalFG = tohex(normalHL.fg)
-  local normalDarkenedAddedColor = blend(addedColor, 0.5, normalBG)
-  local normalDarkenedChangedColor = blend(changedColor, 0.5, normalBG)
-  local normalDarkenedDeletedColor = blend(removedColor, 0.5, normalBG)
-
-  -- gitsigns
-  hl(M["ns_" .. mode], "Added", { fg = normalDarkenedAddedColor, bg = M.options.hl_blended[mode] })
-  hl(M["ns_" .. mode], "Changed", { fg = normalDarkenedChangedColor, bg = M.options.hl_blended[mode] })
-  hl(M["ns_" .. mode], "Removed", { fg = normalDarkenedDeletedColor, bg = M.options.hl_blended[mode] })
-
-  hl(M["ns_" .. mode], "GitSignsAdd", { fg = normalDarkenedAddedColor, bg = M.options.hl_blended[mode] })
-  hl(M["ns_" .. mode], "GitSignsChange", { fg = normalDarkenedChangedColor, bg = M.options.hl_blended[mode] })
-  hl(M["ns_" .. mode], "GitSignsDelete", { fg = normalDarkenedDeletedColor, bg = M.options.hl_blended[mode] })
-  hl(M["ns_" .. mode], "MiniDiffSignAdd", { fg = normalDarkenedAddedColor, bg = M.options.hl_blended[mode] })
-  hl(M["ns_" .. mode], "MiniDiffSignChange", { fg = normalDarkenedChangedColor, bg = M.options.hl_blended[mode] })
-  hl(M["ns_" .. mode], "MiniDiffSignDelete", { fg = normalDarkenedDeletedColor, bg = M.options.hl_blended[mode] })
-
-  hl(M["ns_" .. mode], "CursorLineSign", { bg = M.options.hl_blended[mode], fg = "#9C0C0C" })
-
-  -- diagnostic signs
-  hl(M["ns_" .. mode], "DiagnosticSignOkMoody", { fg = ok.fg, bg = M.options.hl_blended[mode] })
-  hl(M["ns_" .. mode], "DiagnosticSignHintMoody", { fg = hint.fg, bg = M.options.hl_blended[mode] })
-  hl(M["ns_" .. mode], "DiagnosticSignInfoMoody", { fg = info.fg, bg = M.options.hl_blended[mode] })
-  hl(M["ns_" .. mode], "DiagnosticSignWarnMoody", { fg = warn.fg, bg = M.options.hl_blended[mode] })
-  hl(M["ns_" .. mode], "DiagnosticSignErrorMoody", { fg = error.fg, bg = M.options.hl_blended[mode] })
-end
-
 local function setup_ns_and_hlgroups()
   M.options.hl_unblended = utils.hl_unblended()
   M.options.hl_blended = utils.hl_blended(M.options.blends)
