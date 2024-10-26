@@ -15,6 +15,35 @@ M.modes = {
   "terminal_n",
 }
 
+-- these are used by my statuscolumn plugin which does not exist yet.. might make it a part of this plugin :)
+M.fold_colors = {
+  "#33a8c7",
+  "#ffadad",
+  "#52e3e1",
+  "#a0e426",
+  "#ffd6a5",
+  "#fdf148",
+  "#caffbf",
+  "#ffab00",
+  "#9bf6ff",
+  "#f77976",
+  "#bdb2ff",
+  "#f050ae",
+  "#d883ff",
+  "#fdffb6",
+  "#9336fd",
+  "#ffc6ff",
+  "#a0c4ff",
+  -- "e84855"
+  -- "1b998b"
+  --     ""
+}
+
+local tohex = require("moody.math").int_to_hex_string
+local blend = require("moody.math").blend
+local hl = require("moody.utils").change_hl_property
+local utils = require("moody.utils")
+
 M.sl_mark = vim.api.nvim_create_namespace("moodyline")
 
 M.set_sl_mark = function(buffer, line, col, opts)
@@ -50,6 +79,8 @@ local function get_virt_text()
       get_rec_text(),
       { "CursorLineNr", "CursorLine" },
     },
+    -- TODO: make this into a repeatable space, so one can define some right padding
+    { "  ", "CursorLine" },
   }
 end
 
@@ -60,13 +91,51 @@ local function is_disabled_filetype(filetype)
   return vim.tbl_contains(disabled_filetypes, filetype)
 end
 
--- local function setup_hl(ns, name, val)
---   vim.api.nvim_set_hl(ns and ns or 0, name, val)
--- end
+local fix_sign_hl = function(mode)
+  local ok = vim.api.nvim_get_hl(0, { name = "DiagnosticSignOk" })
+  local hint = vim.api.nvim_get_hl(0, { name = "DiagnosticSignHint" })
+  local info = vim.api.nvim_get_hl(0, { name = "DiagnosticSignInfo" })
+  local warn = vim.api.nvim_get_hl(0, { name = "DiagnosticSignWarn" })
+  local error = vim.api.nvim_get_hl(0, { name = "DiagnosticSignError" })
+
+  local added = vim.api.nvim_get_hl(0, { name = "@diff.plus" })
+  local changed = vim.api.nvim_get_hl(0, { name = "@diff.delta" })
+  local removed = vim.api.nvim_get_hl(0, { name = "@diff.minus" })
+
+  local addedColor = tohex(added.fg) or "#a9dc76"
+  local changedColor = tohex(changed.fg) or "#ffd866"
+  local removedColor = tohex(removed.fg) or "#ff6188"
+
+  local normalHL = vim.api.nvim_get_hl(0, { name = "Normal" })
+  local normalBG = tohex(normalHL.bg)
+  -- local normalFG = tohex(normalHL.fg)
+  local normalDarkenedAddedColor = blend(addedColor, 0.5, normalBG)
+  local normalDarkenedChangedColor = blend(changedColor, 0.5, normalBG)
+  local normalDarkenedDeletedColor = blend(removedColor, 0.5, normalBG)
+
+  -- gitsigns
+  hl(M["ns_" .. mode], "Added", { fg = normalDarkenedAddedColor, bg = M.options.hl_blended[mode] })
+  hl(M["ns_" .. mode], "Changed", { fg = normalDarkenedChangedColor, bg = M.options.hl_blended[mode] })
+  hl(M["ns_" .. mode], "Removed", { fg = normalDarkenedDeletedColor, bg = M.options.hl_blended[mode] })
+
+  hl(M["ns_" .. mode], "GitSignsAdd", { fg = normalDarkenedAddedColor, bg = M.options.hl_blended[mode] })
+  hl(M["ns_" .. mode], "GitSignsChange", { fg = normalDarkenedChangedColor, bg = M.options.hl_blended[mode] })
+  hl(M["ns_" .. mode], "GitSignsDelete", { fg = normalDarkenedDeletedColor, bg = M.options.hl_blended[mode] })
+  hl(M["ns_" .. mode], "MiniDiffSignAdd", { fg = normalDarkenedAddedColor, bg = M.options.hl_blended[mode] })
+  hl(M["ns_" .. mode], "MiniDiffSignChange", { fg = normalDarkenedChangedColor, bg = M.options.hl_blended[mode] })
+  hl(M["ns_" .. mode], "MiniDiffSignDelete", { fg = normalDarkenedDeletedColor, bg = M.options.hl_blended[mode] })
+
+  hl(M["ns_" .. mode], "CursorLineSign", { bg = M.options.hl_blended[mode], fg = "#9C0C0C" })
+
+  -- diagnostic signs
+  hl(M["ns_" .. mode], "DiagnosticSignOkMoody", { fg = ok.fg, bg = M.options.hl_blended[mode] })
+  hl(M["ns_" .. mode], "DiagnosticSignHintMoody", { fg = hint.fg, bg = M.options.hl_blended[mode] })
+  hl(M["ns_" .. mode], "DiagnosticSignInfoMoody", { fg = info.fg, bg = M.options.hl_blended[mode] })
+  hl(M["ns_" .. mode], "DiagnosticSignWarnMoody", { fg = warn.fg, bg = M.options.hl_blended[mode] })
+  hl(M["ns_" .. mode], "DiagnosticSignErrorMoody", { fg = error.fg, bg = M.options.hl_blended[mode] })
+end
 
 local function setup_ns_and_hlgroups()
-  local utils = require("moody.utils")
-  local hl = utils.change_hl_property
   M.options.hl_unblended = utils.hl_unblended()
   M.options.hl_blended = utils.hl_blended(M.options.blends)
   local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
@@ -84,36 +153,33 @@ local function setup_ns_and_hlgroups()
       bg = "none",
     })
 
-    hl(M["ns_" .. mode], "LineNrOffset", {
-      fg = M.options.hl_blended[mode],
-      bold = M.options.bold_nr,
-      bg = "none",
-    })
-
     if extend then
       hl(M["ns_" .. mode], "CursorLineNr", {
         fg = M.options.hl_unblended[mode],
         bold = M.options.bold_nr,
         bg = M.options.hl_blended[mode],
-        force = true,
+        -- force = true,
       })
-      hl(M["ns_" .. mode], "CursorLineFold", {
-        fg = M.options.hl_unblended[mode],
-        bold = M.options.bold_nr,
-        bg = M.options.hl_blended[mode],
-        force = true,
-      })
-      hl(M["ns_" .. mode], "CursorLineSign", {
-        fg = M.options.hl_unblended[mode],
-        bold = M.options.bold_nr,
-        bg = M.options.hl_blended[mode],
-        force = true,
-      })
+
+      -- hl the signcolumn (this will sadly not blend with signs :( )
+      -- hl(M["ns_" .. mode], "CursorLineSign", { bg = M.options.hl_blended[mode] })
+
+      -- for fold levels
+      for level, color in ipairs(M.fold_colors) do
+        -- set the hl for foldcolumn for not current line
+        vim.api.nvim_set_hl(M["ns_" .. mode], "FoldLevel_" .. level, { fg = color })
+        -- get the hl for foldcolumn for current line
+        vim.api.nvim_set_hl(
+          M["ns_" .. mode],
+          "CursorLineFoldLevel_" .. level,
+          { bg = M.options.hl_blended[mode], fg = color }
+        )
+      end
     end
 
     hl(
       M["ns_" .. mode],
-      "StatusLineMode",
+      "StatusLineMoody",
       { fg = M.options.hl_unblended[mode], bold = M.options.bold_nr, bg = statusLineHl.bg }
     )
   end
@@ -122,34 +188,12 @@ local function setup_ns_and_hlgroups()
   ---@diagnostic disable-next-line: undefined-field
   vim.api.nvim_set_hl(M.ns_visual, "Visual", { bg = M.options.hl_blended.visual })
 
-  -- if M.options.extend_cursorline then
-  --   vim.api.nvim_set_hl(M.ns_normal, "CursorLineFold", { bg = M.options.hl_blended.normal })
-  --   vim.api.nvim_set_hl(M.ns_insert, "CursorLineFold", { bg = M.options.hl_blended.normal })
-  --   vim.api.nvim_set_hl(M.ns_visual, "CursorLineFold", { bg = M.options.hl_blended.normal })
-  --   vim.api.nvim_set_hl(M.ns_command, "CursorLineFold", { bg = M.options.hl_blended.normal })
-  --   vim.api.nvim_set_hl(M.ns_operator, "CursorLineFold", { bg = M.options.hl_blended.normal })
-  --   vim.api.nvim_set_hl(M.ns_replace, "CursorLineFold", { bg = M.options.hl_blended.normal })
-  --   vim.api.nvim_set_hl(M.ns_select, "CursorLineFold", { bg = M.options.hl_blended.normal })
-  --   vim.api.nvim_set_hl(M.ns_terminal, "CursorLineFold", { bg = M.options.hl_blended.normal })
-  --   vim.api.nvim_set_hl(M.ns_terminal_n, "CursorLineFold", { bg = M.options.hl_blended.normal })
-  -- end
+  -- Special hl group for blending tiny diagnostic background
+  vim.api.nvim_set_hl(0, "MoodyNormal", {
+    bg = M.options.hl_blended.normal,
+    fg = M.options.hl_blended.normal,
+  })
 end
-
--- local function setup_hl_namespaces()
---   for _, mode in ipairs(M.modes) do
---     M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
---   end
---
---   -- M.ns_normal = vim.api.nvim_create_namespace("Moody_NORMAL_NS")
---   -- M.ns_insert = vim.api.nvim_create_namespace("Moody_INSERT_NS")
---   -- M.ns_visual = vim.api.nvim_create_namespace("Moody_VISUAL_NS")
---   -- M.ns_command = vim.api.nvim_create_namespace("Moody_COMMAND_NS")
---   -- M.ns_operator = vim.api.nvim_create_namespace("Moody_OPERATOR_NS")
---   -- M.ns_replace = vim.api.nvim_create_namespace("Moody_REPLACE_NS")
---   -- M.ns_select = vim.api.nvim_create_namespace("Moody_SELECT_NS")
---   -- M.ns_terminal = vim.api.nvim_create_namespace("Moody_TERMINAL_NS")
---   -- M.ns_terminal_n = vim.api.nvim_create_namespace("Moody_TERMINAL_N_NS")
--- end
 
 ---@class Config
 ---@field blends Blends: how much to blend colors with black for the cursorline
@@ -223,16 +267,94 @@ M.defaults = {
   },
 }
 
+--- switches the hl-namespace depending on the mode in event.
+--- only usefull for ModeChanged event, as it's used in
+--- ModeChanged autocommand inside this plugin.
+---@param event any
+function M.trigger_mode(event)
+  local mode = string.match(event.match, ".*:([^:]+)")
+  local win = vim.api.nvim_get_current_win()
+
+  -- local currentMode = "normal"
+
+  utils.switch(mode, {
+    ["n"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_normal)
+      -- currentMode = "normal"
+    end,
+    ["i"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_insert)
+      -- currentMode = "insert"
+    end,
+    ["ix"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_insert)
+      -- currentMode = "insert"
+    end,
+    ["v"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
+      -- currentMode = "visual"
+    end,
+    ["V"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
+      -- currentMode = "visual"
+    end,
+    [""] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
+      -- currentMode = "visual"
+    end,
+    ["c"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_command)
+      -- currentMode = "command"
+    end,
+    ["r"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_replace)
+      -- currentMode = "replace"
+    end,
+    ["s"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_select)
+      -- currentMode = "select"
+    end,
+    ["t"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_terminal)
+      -- currentMode = "terminal"
+    end,
+    ["nt"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_terminal_n)
+      -- currentMode = "terminal_n"
+    end,
+    ["no"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_operator)
+      -- currentMode = "operator"
+    end,
+    ["default"] = function()
+      vim.api.nvim_set_hl_ns(0)
+      -- currentMode = "default"
+    end,
+  })()
+end
+
 --- We will not generate documentation for this function
 --- because it has `__` as prefix. This is the one exception
 --- Setup options by extending defaults with the options proveded by the user
 ---@param options Config: config table
 function M.__setup(options)
   M.options = vim.tbl_deep_extend("force", {}, M.defaults, options or {})
-  local utils = require("moody.utils")
 
   local mode_group = vim.api.nvim_create_augroup("MoodyModeGroup", { clear = true })
   local rec_group = vim.api.nvim_create_augroup("MoodyRecordingGroup", { clear = true })
+
   -- load up the "colour caches" and setup highlights with it
   setup_ns_and_hlgroups()
 
@@ -269,83 +391,7 @@ function M.__setup(options)
         return
       end
 
-      -- regex match with mode entered
-      local mode = string.match(event.match, ".*:([^:]+)")
-
-      local win = vim.api.nvim_get_current_win()
-
-      -- local debugText = "default"
-
-      utils.switch(mode, {
-        ["n"] = function()
-          ---@diagnostic disable-next-line: undefined-field
-          vim.api.nvim_win_set_hl_ns(win, M.ns_normal)
-          -- debugText = "normal"
-        end,
-        ["i"] = function()
-          ---@diagnostic disable-next-line: undefined-field
-          vim.api.nvim_win_set_hl_ns(win, M.ns_insert)
-          -- debugText = "insert"
-        end,
-        ["ix"] = function()
-          ---@diagnostic disable-next-line: undefined-field
-          vim.api.nvim_win_set_hl_ns(win, M.ns_insert)
-          -- debugText = "insert-completion"
-        end,
-        ["v"] = function()
-          ---@diagnostic disable-next-line: undefined-field
-          vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
-          -- debugText = "visual"
-        end,
-        ["V"] = function()
-          ---@diagnostic disable-next-line: undefined-field
-          vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
-          -- debugText = "visual-line"
-        end,
-        [""] = function()
-          ---@diagnostic disable-next-line: undefined-field
-          vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
-          -- debugText = "visual-block"
-        end,
-        ["c"] = function()
-          ---@diagnostic disable-next-line: undefined-field
-          vim.api.nvim_win_set_hl_ns(win, M.ns_command)
-          -- debugText = "command"
-        end,
-        ["r"] = function()
-          ---@diagnostic disable-next-line: undefined-field
-          vim.api.nvim_win_set_hl_ns(win, M.ns_replace)
-          -- debugText = "replace"
-        end,
-        ["s"] = function()
-          ---@diagnostic disable-next-line: undefined-field
-          vim.api.nvim_win_set_hl_ns(win, M.ns_select)
-          -- debugText = "select"
-        end,
-        ["t"] = function()
-          ---@diagnostic disable-next-line: undefined-field
-          vim.api.nvim_win_set_hl_ns(win, M.ns_terminal)
-          -- debugText = "terminal"
-        end,
-        ["nt"] = function()
-          ---@diagnostic disable-next-line: undefined-field
-          vim.api.nvim_win_set_hl_ns(win, M.ns_terminal_n)
-          -- debugText = "normal-terminal"
-        end,
-        ["no"] = function()
-          ---@diagnostic disable-next-line: undefined-field
-          vim.api.nvim_win_set_hl_ns(win, M.ns_operator)
-          -- debugText = "operator-pending"
-        end,
-        ["default"] = function()
-          vim.api.nvim_set_hl_ns(0)
-          -- debugText = "default"
-        end,
-      })()
-
-      -- setup and print some debug data top cmdline
-      -- local debugdata = "mode is " .. mode .. " debugText is: " .. debugText
-      -- vim.cmd(string.format([[echo "%s"]], debugdata))
+      M.trigger_mode(event)
     end,
   })
 

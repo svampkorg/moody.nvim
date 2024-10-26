@@ -15,7 +15,7 @@ function M.int_to_hex_string(number)
   end
 end
 
--- "Borrowed" from Mr Folke TokyonNight :)
+-- "Borrowed" from Mr Folke TokyoNight :)
 -- https://github.com/folke/tokyonight.nvim/blob/66a272ba6cf93bf303c4b7a91b100ca0dd3ec7bd/lua/tokyonight/util.lua#L30
 M.bg = "#000000"
 M.fg = "#ffffff"
