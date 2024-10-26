@@ -39,8 +39,6 @@ M.fold_colors = {
   --     ""
 }
 
-local tohex = require("moody.math").int_to_hex_string
-local blend = require("moody.math").blend
 local hl = require("moody.utils").change_hl_property
 local utils = require("moody.utils")
 
