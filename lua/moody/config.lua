@@ -339,7 +339,6 @@ function M.__setup(options)
     desc = "set highlights depending on mode",
     group = mode_group,
     callback = function(event)
-      -- restore all highlights if disabled
       if is_disabled_filetype(vim.bo.filetype) then
         vim.api.nvim_set_hl_ns(0)
         return
@@ -358,8 +357,11 @@ function M.__setup(options)
   vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "BufWinEnter" }, {
     group = mode_group,
     callback = function(_)
+      if is_disabled_filetype(vim.bo.filetype) then
+        vim.api.nvim_set_hl_ns(0)
+        return
+      end
       local win = vim.api.nvim_get_current_win()
-      -- vim.wo.cursorline = true
       vim.api.nvim_set_option_value("cursorline", true, {
         win = win,
       })
@@ -368,8 +370,11 @@ function M.__setup(options)
   vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
     group = mode_group,
     callback = function(_)
+      if is_disabled_filetype(vim.bo.filetype) then
+        vim.api.nvim_set_hl_ns(0)
+        return
+      end
       local win = vim.api.nvim_get_current_win()
-      -- vim.wo.cursorline = false
       vim.api.nvim_set_option_value("cursorline", false, {
         win = win,
       })
@@ -380,6 +385,10 @@ function M.__setup(options)
     vim.api.nvim_create_autocmd({ "RecordingEnter" }, {
       group = rec_group,
       callback = function(event)
+        if is_disabled_filetype(vim.bo.filetype) then
+          vim.api.nvim_set_hl_ns(0)
+          return
+        end
         if not get_virt_text() then
           return
         end
@@ -399,6 +408,10 @@ function M.__setup(options)
     vim.api.nvim_create_autocmd({ "RecordingLeave" }, {
       group = rec_group,
       callback = function(event)
+        if is_disabled_filetype(vim.bo.filetype) then
+          vim.api.nvim_set_hl_ns(0)
+          return
+        end
         M.del_sl_mark(event.buf)
       end,
     })
@@ -406,6 +419,10 @@ function M.__setup(options)
     vim.api.nvim_create_autocmd({ "CursorMoved" }, {
       group = rec_group,
       callback = function(event)
+        if is_disabled_filetype(vim.bo.filetype) then
+          vim.api.nvim_set_hl_ns(0)
+          return
+        end
         if not get_virt_text() then
           return
         end
@@ -423,6 +440,10 @@ function M.__setup(options)
     vim.api.nvim_create_autocmd({ "WinLeave" }, {
       group = rec_group,
       callback = function(event)
+        if is_disabled_filetype(vim.bo.filetype) then
+          vim.api.nvim_set_hl_ns(0)
+          return
+        end
         M.del_sl_mark(event.buf)
       end,
     })
