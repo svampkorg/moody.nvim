@@ -38,6 +38,7 @@ moody.setup({options})                                         *moody.setup()*
         terminal_n = "#00BBCC",
         visual = "#AD6FF7"
       },
+      disabled_buftypes = {},
       disabled_filetypes = {},
       extend_to_linenr = false,
       extend_to_linenr_visual = false,
