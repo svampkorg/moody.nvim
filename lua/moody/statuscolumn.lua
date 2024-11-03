@@ -8,6 +8,7 @@ function statuscolumn.char_on_pos(pos)
   pos = pos or vim.fn.getpos(".")
   return tostring(vim.fn.getline(pos[1])):sub(pos[2], pos[2])
 end
+
 -- borrowed from https://github.com/Wansmer/nvim-config/blob/main/lua/utils.lua#L83
 -- From: https://neovim.discourse.group/t/how-do-you-work-with-strings-with-multibyte-characters-in-lua/2437/4
 function statuscolumn.char_byte_count(s, i)
@@ -51,42 +52,6 @@ function statuscolumn.get_visual_range()
   return range
 end
 
--- local user_config = {
---   -- modes = require("config").modes,
---   -- modes = {
---   --   "normal",
---   --   "insert",
---   --   "visual",
---   --   "command",
---   --   "operator",
---   --   "replace",
---   --   "select",
---   --   "terminal",
---   --   "terminal_n",
---   -- },
---   -- colors = require("moody.config").fold_colors,
---
---   -- colors = {
---   --   "#33a8c7",
---   --   "#ffadad",
---   --   "#52e3e1",
---   --   "#a0e426",
---   --   "#ffd6a5",
---   --   "#fdf148",
---   --   "#caffbf",
---   --   "#ffab00",
---   --   "#9bf6ff",
---   --   "#f77976",
---   --   "#bdb2ff",
---   --   "#f050ae",
---   --   "#d883ff",
---   --   "#fdffb6",
---   --   "#9336fd",
---   --   "#ffc6ff",
---   --   "#a0c4ff",
---   -- },
--- }
-
 statuscolumn.number = function()
   local uncolored_text = "%#LineNr#"
   local colored_text = "%#CursorLineNr#"
@@ -95,13 +60,8 @@ statuscolumn.number = function()
 
   local width = #tostring(vim.api.nvim_buf_line_count(0))
 
-  -- local nu = vim.opt.number:get()
-  -- local rnu = vim.opt.relativenumber:get()
-  -- local cur_line = vim.fn.line(".") == vim.v.lnum and vim.v.lnum or vim.v.relnum
-
-  -- Repeats the behavior for `vim.opt.numberwidth`
-  -- local width = vim.opt.numberwidth:get()
   local l_count_width = #tostring(vim.api.nvim_buf_line_count(0))
+  --
   -- If buffer have more lines than `vim.opt.numberwidth` then use width of line count
   width = width >= l_count_width and width or l_count_width
 
@@ -110,34 +70,13 @@ statuscolumn.number = function()
     return len < 1 and " " .. n or (" "):rep(len + 1) .. n
   end
 
-  -- local function pad_start(n)
-  --   local len = width - #tostring(n)
-  --   return len < 1 and " " or (" "):rep(len)
-  -- end
-
-  -- if mode == "v" then
-  --   local v_range = statuscolumn.get_visual_range()
-  --   local is_in_range = vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
-  --   return is_in_range and colored_text .. pad_start(width) .. vim.v.lnum
-  --     or uncolored_text .. pad_start(width) .. vim.v.relnum
-  -- end
-
   if mode == "v" then
     local v_range = statuscolumn.get_visual_range()
     local is_in_range = vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
     return is_in_range and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum)
   end
 
-  -- if nu and rnu then
-  --   return v_hl .. pad_start(cur_line)
-  -- elseif nu then
-  --   return v_hl .. pad_start(vim.v.lnum)
-  -- elseif rnu then
-  --   return v_hl .. pad_start(vim.v.relnum)
-  -- end
-
   return vim.v.relnum == 0 and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum)
-  -- return vim.v.relnum == 0 and colored_text .. " " .. vim.v.lnum or uncolored_text .. " " .. vim.v.relnum
 end
 
 statuscolumn.sign = function()
@@ -157,7 +96,6 @@ statuscolumn.myStatusColumn = function()
 
   text = table.concat({
     "%s",
-    -- " ",
     "%=",
     statuscolumn.number(),
     " ",
@@ -171,11 +109,6 @@ local moody_config = require("moody.config")
 
 -- options for extending cursorline to linenumbers and also using moody's statuscolumn
 local extend_and_folds = moody_config.options.enable_statuscolumn and moody_config.options.extend_cursorline
-
--- local function pad_start(n, width)
---   local len = width - #tostring(n)
---   return len < 1 and n or (" "):rep(len) .. n
--- end
 
 statuscolumn.folds = function()
   local win = vim.g.statusline_winid
@@ -224,16 +157,6 @@ statuscolumn.folds = function()
     or ("%#FoldLevel_" .. level .. "#")
     or "%#FoldColumn#"
   local after_level = after_foldinfo.level
-
-  -- if level == 0 and is_visual_and_range and extend_and_folds then
-  --   return string .. ("%#FoldLevelVisual_" .. " #"):rep(width) .. "%*"
-  -- elseif level == 0 then
-  --   return string .. (" "):rep(width) .. "%*"
-  -- end
-
-  -- if level == 0 then
-  --   return string .. (" "):rep(width) .. "%*"
-  -- end
 
   if level == 0 then
     return string .. (is_visual_and_range and extend_and_folds and "%#Visual" .. "# " or " "):rep(width) .. "%*"

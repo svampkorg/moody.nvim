@@ -158,6 +158,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
 - [S1M0N38/my-awesome-plugin.nvim](https://github.com/ellisonleao/nvim-plugin-template) - *Plugin Structure* I used this to generate the structure of this plugin. Thanks S1M0N38! ❤️
 - [nvim-telescope/telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) - *Tests, lint, docs generation*
 - [folke/tokyonight.nvim](https://github.com/folke/tokyonight.nvim) - *Colour calculations* Borrowed some colour calculation methods from here ❤️
+- [Wansmer/nvim-config](https://github.com/Wansmer/nvim-config) - *Line numbers & visual selection* Borrowed some code from this guys neovim config (/lua/modules/status/components) ❤️
 
 ## 🫶 Similar
 
