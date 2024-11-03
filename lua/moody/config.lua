@@ -79,6 +79,7 @@ local function setup_ns_and_hlgroups()
   local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
   local extend = M.options.extend_to_linenr
   local show_folds = M.options.fold_options.enabled
+  local diagnostic = M.options.extend_to_diagnostic_sign
 
   for _, mode in ipairs(M.modes) do
     M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
@@ -102,6 +103,14 @@ local function setup_ns_and_hlgroups()
 
       -- hl the signcolumn (this will sadly not blend with signs :( )
       -- hl(M["ns_" .. mode], "CursorLineSign", { bg = M.options.hl_blended[mode] })
+    end
+
+    if diagnostic then
+      hl(M["ns_" .. mode], "MoodyDiagnosticSignOk", { bg = M.options.hl_blended[mode] })
+      hl(M["ns_" .. mode], "MoodyDiagnosticSignHint", { bg = M.options.hl_blended[mode] })
+      hl(M["ns_" .. mode], "MoodyDiagnosticSignInfo", { bg = M.options.hl_blended[mode] })
+      hl(M["ns_" .. mode], "MoodyDiagnosticSignWarn", { bg = M.options.hl_blended[mode] })
+      hl(M["ns_" .. mode], "MoodyDiagnosticSignError", { bg = M.options.hl_blended[mode] })
     end
 
     if show_folds then
@@ -160,6 +169,7 @@ end
 ---@field extend_to_linenr_visual boolean: extend the cursorline into linenumbers
 ---@field recording Recording: bold linenumbers or not
 ---@field fold_options FoldOptions: settings for the statuscolumn folds
+---@field extend_to_diagnostic_sign boolean: extend the cursorline to diagnostic sign
 M.options = {}
 
 ---@type Config
@@ -225,6 +235,8 @@ M.defaults = {
   extend_to_linenr = false,
   ---@type boolean
   extend_to_linenr_visual = false,
+  ---@type boolean
+  extend_to_diagnostic_sign = true,
   ---@class Recording
   ---@field enabled boolean: set to true to enable recording indicator
   ---@field icon string: set an icon to show next to the register indicator

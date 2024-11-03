@@ -46,7 +46,7 @@ function statuscolumn.get_visual_range()
   local byte_c = statuscolumn.char_byte_count(statuscolumn.char_on_pos({ er, ec }))
   ec = ec + (byte_c - 1)
 
-  local range = {}
+  local range
 
   if sr == er then
     local cols = sc >= ec and { ec, sc } or { sc, ec }
@@ -88,8 +88,8 @@ statuscolumn.number = function()
 end
 
 statuscolumn.sign = function()
-  local uncolored_text = "%#CursorLine#"
-  local colored_text = "%#CursorLineSign#"
+  local uncolored_text = "%#DiagnosticSign#"
+  local colored_text = "%#MoodyDiagnosticSign#"
   return vim.v.relnum == 0 and colored_text .. "%s" or uncolored_text .. "%s"
 end
 
@@ -104,6 +104,7 @@ statuscolumn.myStatusColumn = function()
 
   text = table.concat({
     "%s", -- symbols
+    -- statuscolumn.sign(),
     "%=", -- right align
     statuscolumn.number(), -- numbers
     " ", -- extra padding before..
