@@ -84,6 +84,26 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
             -- perhaps! For example recording to q, you could have! "󰑋    q" :D
             pre_registry_text = "[",
             post_registry_text = "]",
+            -- if you have some other plugin showing up on the right you can pad
+            -- the recording indicator on the right side, to shift it to the left.
+            -- For example if you use Satellite you have to shift recording to the left.
+            -- using right padding.
+            right_padding = 2,
+        },
+        -- extend the cursorline to cover line numbers. 
+        -- This enables moodys built in statuscolumn to cover linenr in visual selection
+        -- to show the visual range of the selection highlighted by Visual hl group.
+        extend_to_linenr = true,
+        extend_to_linenr_visual = false,
+        -- fold_options.enabled also enables the built in statuscolumn in moody. These folds takes a bit of a different
+        -- approach to showing folds and their range. Try it out and see if you like it :) If not you can use
+        -- the statuscolumn as is, with extend_to_linenr. It will then only show diagnostic signs and linenr.
+        fold_options = {
+            enabled = false,
+            -- these are two colors you can specifiy which will be used to generate a gradient
+            -- with one step for each fold level, specified by vim.o.foldnestmax
+            start_color = "#C1C1C1",
+            end_color = "#2F2F2F",
         },
     },
   }
@@ -135,11 +155,19 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
     },
     disabled_filetypes = {},
     bold_nr = true,
+    extend_to_linenr = true,
+    extend_to_linenr_visual = false,
+    fold_options = {
+        enabled = false,
+        start_color = "#C1C1C1",
+        end_color = "#2F2F2F",
+    },
     recording = {
         enabled = false,
         icon = "󰑋",
         pre_registry_text = "[",
         post_registry_text = "]",
+        right_padding = 2,
     },
 }
 ```

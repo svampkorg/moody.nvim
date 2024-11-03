@@ -41,6 +41,7 @@ local function get_rec_text()
 end
 
 local function get_virt_text()
+  local right_padding = M.options.recording.right_padding
   if get_rec_text() == "" then
     return nil
   end
@@ -54,7 +55,7 @@ local function get_virt_text()
       { "CursorLineNr", "CursorLine" },
     },
     -- TODO: make this into a repeatable space, so one can define some right padding
-    { "  ", "CursorLine" },
+    { (" "):rep(right_padding), "CursorLine" },
   }
 end
 
@@ -69,8 +70,8 @@ local function setup_ns_and_hlgroups()
   M.options.hl_unblended = utils.hl_unblended()
   M.options.hl_blended = utils.hl_blended(M.options.blends)
   local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
-  local extend = M.options.extend_cursorline
-  local statuscolumn = M.options.enable_statuscolumn
+  local extend = M.options.extend_to_linenr
+  local show_folds = M.options.fold_options.enabled
 
   for _, mode in ipairs(M.modes) do
     M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
@@ -96,11 +97,11 @@ local function setup_ns_and_hlgroups()
       -- hl(M["ns_" .. mode], "CursorLineSign", { bg = M.options.hl_blended[mode] })
     end
 
-    if statuscolumn then
+    if show_folds then
       local fold_colors = utils.generate_gradients(
         M.options.fold_options.start_color,
         M.options.fold_options.end_color,
-        M.options.fold_options.maxlevels
+        vim.o.foldnestmax
       )
 
       -- for fold levels
@@ -116,7 +117,11 @@ local function setup_ns_and_hlgroups()
         hl(M["ns_" .. mode], "UfoCursorFoldedLine", { bg = M.options.hl_blended[mode] })
 
         -- set the hl for foldcolumn for current line
-        hl(M["ns_" .. mode], "CursorLineFoldLevel_" .. level, { bg = M.options.hl_blended[mode], fg = color })
+        hl(
+          M["ns_" .. mode],
+          "CursorLineFoldLevel_" .. level,
+          { bg = extend and M.options.hl_blended[mode] or "none", fg = color }
+        )
       end
     end
 
@@ -143,9 +148,9 @@ end
 ---@field colors Colors: table of colours with respective mode
 ---@field disabled_filetypes table<string>: List of buffers to disable this plugin for
 ---@field bold_nr boolean: bold linenumbers or not
----@field extend_cursorline boolean: extend the cursorline into signcolumn
+---@field extend_to_linenr boolean: extend the cursorline into linenumbers
+---@field extend_to_linenr_visual boolean: extend the cursorline into linenumbers
 ---@field recording Recording: bold linenumbers or not
----@field enable_statuscolumn boolean: use a custom statuscolumn provided by Moody
 ---@field fold_options FoldOptions: settings for the statuscolumn folds
 M.options = {}
 
@@ -193,15 +198,13 @@ M.defaults = {
     terminal = "#4CD4BD",
     terminal_n = "#00BBCC",
   },
-  ---@type boolean
-  enable_statuscolumn = false,
   ---@class FoldOptions
-  ---@field maxlevels integer: the number of fold levels to generate colors for
+  ---@field enabled boolean: enable using moody folds
   ---@field start_color string: hex format start color for fold levels
   ---@field end_color string: hex format end color for fold levels
   fold_options = {
-    maxlevels = 10,
-    start_color = "#F1F1F1",
+    enabled = false,
+    start_color = "#C1C1C1",
     end_color = "#2F2F2F",
   },
   ---@type table<string>
@@ -209,17 +212,21 @@ M.defaults = {
   ---@type boolean
   bold_nr = true,
   ---@type boolean
-  extend_cursorline = false,
+  extend_to_linenr = false,
+  ---@type boolean
+  extend_to_linenr_visual = false,
   ---@class Recording
   ---@field enabled boolean: set to true to enable recording indicator
   ---@field icon string: set an icon to show next to the register indicator
   ---@field pre_registry_text string: text or char to show before recording registry
   ---@field post_registry_text string: text or char to show after recording registry
+  ---@field right_padding integer: how much space to pad to the right of the recording indicator (shifts it to the left)
   recording = {
     enabled = false,
     icon = "󰑋",
     pre_registry_text = "[",
     post_registry_text = "]",
+    right_padding = 2,
   },
 }
 
@@ -314,10 +321,12 @@ function M.__setup(options)
   -- load up the "colour caches" and setup highlights with it
   setup_ns_and_hlgroups()
 
-  if M.options.enable_statuscolumn then
-    vim.o.foldnestmax = M.options.fold_options.maxlevels
-    vim.cmd("set foldnestmax=" .. M.options.fold_options.maxlevels)
-    vim.o.statuscolumn = "%!v:lua.require('moody.statuscolumn').myStatusColumn()"
+  if M.options.fold_options.enabled then
+    vim.api.nvim_set_option_value(
+      "statuscolumn",
+      "%!v:lua.require('moody.statuscolumn').myStatusColumn()",
+      { scope = "global" }
+    )
   end
 
   -- A few cases where cursorline is needed to be set to not

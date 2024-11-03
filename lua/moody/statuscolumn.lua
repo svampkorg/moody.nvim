@@ -4,6 +4,14 @@ local error = ffi.new("Error")
 
 local statuscolumn = {}
 
+local moody_config = require("moody.config")
+
+-- options for extending cursorline to linenumbers and also using moody's statuscolumn
+local extend_to_linenr = moody_config.options.extend_to_linenr
+local show_folds = moody_config.options.fold_options.enabled
+local extend_to_linenr_visual = moody_config.options.extend_to_linenr_visual
+local extend_and_folds = extend_to_linenr and show_folds
+
 function statuscolumn.char_on_pos(pos)
   pos = pos or vim.fn.getpos(".")
   return tostring(vim.fn.getline(pos[1])):sub(pos[2], pos[2])
@@ -70,7 +78,7 @@ statuscolumn.number = function()
     return len < 1 and " " .. n or (" "):rep(len + 1) .. n
   end
 
-  if mode == "v" then
+  if mode == "v" and extend_to_linenr_visual then
     local v_range = statuscolumn.get_visual_range()
     local is_in_range = vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
     return is_in_range and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum)
@@ -99,16 +107,11 @@ statuscolumn.myStatusColumn = function()
     "%=",
     statuscolumn.number(),
     " ",
-    statuscolumn.folds(),
+    show_folds and statuscolumn.folds() or "",
   })
 
   return text
 end
-
-local moody_config = require("moody.config")
-
--- options for extending cursorline to linenumbers and also using moody's statuscolumn
-local extend_and_folds = moody_config.options.enable_statuscolumn and moody_config.options.extend_cursorline
 
 statuscolumn.folds = function()
   local win = vim.g.statusline_winid
