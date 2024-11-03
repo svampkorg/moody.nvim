@@ -5,7 +5,7 @@ local error = ffi.new("Error")
 local statuscolumn = {}
 
 local moody_config = require("moody.config")
-local utils = require("moody.utils")
+-- local utils = require("moody.utils")
 
 -- options for extending cursorline to linenumbers and also using moody's statuscolumn
 local extend_to_linenr = moody_config.options.extend_to_linenr
