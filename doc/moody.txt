@@ -40,6 +40,7 @@ moody.setup({options})                                         *moody.setup()*
       },
       disabled_buftypes = {},
       disabled_filetypes = {},
+      extend_to_diagnostic_sign = true,
       extend_to_linenr = false,
       extend_to_linenr_visual = false,
       fold_options = {
