@@ -39,7 +39,13 @@ moody.setup({options})                                         *moody.setup()*
         visual = "#AD6FF7"
       },
       disabled_filetypes = {},
+      enable_statuscolumn = false,
       extend_cursorline = false,
+      fold_options = {
+        end_color = "#2F2F2F",
+        maxlevels = 10,
+        start_color = "#F1F1F1"
+      },
       recording = {
         enabled = false,
         icon = "󰑋",
