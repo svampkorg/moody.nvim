@@ -5,6 +5,7 @@ local error = ffi.new("Error")
 local statuscolumn = {}
 
 local moody_config = require("moody.config")
+local utils = require("moody.utils")
 
 -- options for extending cursorline to linenumbers and also using moody's statuscolumn
 local extend_to_linenr = moody_config.options.extend_to_linenr
@@ -93,8 +94,22 @@ statuscolumn.sign = function()
   return vim.v.relnum == 0 and colored_text .. "%s" or uncolored_text .. "%s"
 end
 
+-- local diagnostic_lookup = {
+--   [1] = "Error",
+--   [2] = "Warn",
+--   [3] = "Info",
+--   [4] = "Hint",
+-- }
+-- statuscolumn.get_diagnostic_for_line = function()
+--   local diagnostic = vim.diagnostic.get(0, { lnum = vim.v.lnum - 1 })
+--   local severity = diagnostic["severity"]
+--   if severity then
+--     utils.P("severity" .. diagnostic_lookup[severity])
+--   end
+--   -- utils.P(diagnostic.user_data and diagnostic.user_data.lsp.severity or "no diagnostics")
+-- end
+
 statuscolumn.myStatusColumn = function()
-  --statuscolumn.generate_colors()
   local text = ""
 
   local win = vim.g.statusline_winid
