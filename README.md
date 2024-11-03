@@ -71,6 +71,8 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
         -- disable filetypes here. Add for example "TelescopePrompt" to
         -- not have any coloured cursorline for the telescope prompt.
         disabled_filetypes = { "TelescopePrompt" },
+        -- disabled buftypes here
+        disabled_buftypes = { },
         -- you can turn on or off bold characters for the line numbers
         bold_nr = true,
         -- you can turn on and off a feature which shows a little icon and
@@ -154,6 +156,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
         terminal_n = "#00BBCC",
     },
     disabled_filetypes = {},
+    disabled_buftypes = {},
     bold_nr = true,
     extend_to_linenr = true,
     extend_to_linenr_visual = false,
