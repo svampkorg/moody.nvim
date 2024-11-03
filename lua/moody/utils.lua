@@ -6,7 +6,7 @@
 local M = {}
 
 local darken = require("moody.math").darken
-local blend = require("moody.math").blend
+local blend_c = require("moody.math").blend
 
 local tohex = require("moody.math").int_to_hex_string
 -- local options = require("moody.config").options
@@ -152,7 +152,7 @@ function M.generate_gradients(first, second, steps)
 
   -- var, limit, step
   for step = 0, 1, increment do
-    table.insert(colors, blend(first, step, second))
+    table.insert(colors, blend_c(first, step, second))
   end
   return colors
 end
