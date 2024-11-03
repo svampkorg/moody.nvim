@@ -66,11 +66,11 @@ statuscolumn.number = function()
 
   local mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
 
-  local width = #tostring(vim.api.nvim_buf_line_count(0))
+  -- local width = #tostring(vim.api.nvim_buf_line_count(0))
+  local width = vim.opt.numberwidth
 
   local l_count_width = #tostring(vim.api.nvim_buf_line_count(0))
-  --
-  -- If buffer have more lines than `vim.opt.numberwidth` then use width of line count
+
   width = width >= l_count_width and width or l_count_width
 
   local function pad_start(n)
@@ -103,11 +103,11 @@ statuscolumn.myStatusColumn = function()
   end
 
   text = table.concat({
-    "%s",
-    "%=",
-    statuscolumn.number(),
-    " ",
-    show_folds and statuscolumn.folds() or "",
+    "%s", -- symbols
+    "%=", -- right align
+    statuscolumn.number(), -- numbers
+    " ", -- extra padding before..
+    show_folds and statuscolumn.folds() or "", -- maybe folds, and after that your code! (.. maybe)
   })
 
   return text
