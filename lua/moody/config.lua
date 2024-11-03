@@ -15,30 +15,6 @@ M.modes = {
   "terminal_n",
 }
 
--- these are used by my statuscolumn plugin which does not exist yet.. might make it a part of this plugin :)
-M.fold_colors = {
-  "#33a8c7",
-  "#ffadad",
-  "#52e3e1",
-  "#a0e426",
-  "#ffd6a5",
-  "#fdf148",
-  "#caffbf",
-  "#ffab00",
-  "#9bf6ff",
-  "#f77976",
-  "#bdb2ff",
-  "#f050ae",
-  "#d883ff",
-  "#fdffb6",
-  "#9336fd",
-  "#ffc6ff",
-  "#a0c4ff",
-  -- "e84855"
-  -- "1b998b"
-  --     ""
-}
-
 local hl = require("moody.utils").change_hl_property
 local utils = require("moody.utils")
 
@@ -94,6 +70,7 @@ local function setup_ns_and_hlgroups()
   M.options.hl_blended = utils.hl_blended(M.options.blends)
   local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
   local extend = M.options.extend_cursorline
+  local statuscolumn = M.options.enable_statuscolumn
 
   for _, mode in ipairs(M.modes) do
     M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
@@ -117,17 +94,29 @@ local function setup_ns_and_hlgroups()
 
       -- hl the signcolumn (this will sadly not blend with signs :( )
       -- hl(M["ns_" .. mode], "CursorLineSign", { bg = M.options.hl_blended[mode] })
+    end
+
+    if statuscolumn then
+      local fold_colors = utils.generate_gradients(
+        M.options.fold_options.start_color,
+        M.options.fold_options.end_color,
+        M.options.fold_options.maxlevels
+      )
 
       -- for fold levels
-      for level, color in ipairs(M.fold_colors) do
+      for level, color in ipairs(fold_colors) do
         -- set the hl for foldcolumn for not current line
-        vim.api.nvim_set_hl(M["ns_" .. mode], "FoldLevel_" .. level, { fg = color })
-        -- get the hl for foldcolumn for current line
-        vim.api.nvim_set_hl(
-          M["ns_" .. mode],
-          "CursorLineFoldLevel_" .. level,
-          { bg = M.options.hl_blended[mode], fg = color }
-        )
+        hl(M["ns_" .. mode], "FoldLevel_" .. level, { fg = color })
+        if mode == "visual" then
+          hl(M["ns_" .. mode], "FoldLevelVisual_" .. level, { fg = color, bg = M.options.hl_blended[mode] })
+        end
+
+        -- settings for fold, and in case of ufo UfoCursorFoldedLine
+        hl(M["ns_" .. mode], "FoldColumn", { bg = M.options.hl_blended[mode] })
+        hl(M["ns_" .. mode], "UfoCursorFoldedLine", { bg = M.options.hl_blended[mode] })
+
+        -- set the hl for foldcolumn for current line
+        hl(M["ns_" .. mode], "CursorLineFoldLevel_" .. level, { bg = M.options.hl_blended[mode], fg = color })
       end
     end
 
@@ -142,11 +131,11 @@ local function setup_ns_and_hlgroups()
   ---@diagnostic disable-next-line: undefined-field
   vim.api.nvim_set_hl(M.ns_visual, "Visual", { bg = M.options.hl_blended.visual })
 
-  -- Special hl group for blending tiny diagnostic background
-  vim.api.nvim_set_hl(0, "MoodyNormal", {
-    bg = M.options.hl_blended.normal,
-    fg = M.options.hl_blended.normal,
-  })
+  -- Special hl group in global ns for use where you might want just a normal cursorline
+  vim.api.nvim_set_hl(0, "MoodyNormal", { bg = M.options.hl_blended.normal })
+
+  -- normal cursorline for global ns
+  vim.api.nvim_set_hl(0, "CursorLine", { bg = M.options.hl_blended.normal })
 end
 
 ---@class Config
@@ -156,6 +145,8 @@ end
 ---@field bold_nr boolean: bold linenumbers or not
 ---@field extend_cursorline boolean: extend the cursorline into signcolumn
 ---@field recording Recording: bold linenumbers or not
+---@field enable_statuscolumn boolean: use a custom statuscolumn provided by Moody
+---@field fold_options FoldOptions: settings for the statuscolumn folds
 M.options = {}
 
 ---@type Config
@@ -201,6 +192,17 @@ M.defaults = {
     select = "#AD6FF7",
     terminal = "#4CD4BD",
     terminal_n = "#00BBCC",
+  },
+  ---@type boolean
+  enable_statuscolumn = false,
+  ---@class FoldOptions
+  ---@field maxlevels integer: the number of fold levels to generate colors for
+  ---@field start_color string: hex format start color for fold levels
+  ---@field end_color string: hex format end color for fold levels
+  fold_options = {
+    maxlevels = 10,
+    start_color = "#F1F1F1",
+    end_color = "#2F2F2F",
   },
   ---@type table<string>
   disabled_filetypes = {},
@@ -311,6 +313,12 @@ function M.__setup(options)
 
   -- load up the "colour caches" and setup highlights with it
   setup_ns_and_hlgroups()
+
+  if M.options.enable_statuscolumn then
+    vim.o.foldnestmax = M.options.fold_options.maxlevels
+    vim.cmd("set foldnestmax=" .. M.options.fold_options.maxlevels)
+    vim.o.statuscolumn = "%!v:lua.require('moody.statuscolumn').myStatusColumn()"
+  end
 
   -- A few cases where cursorline is needed to be set to not
   -- have a default gray line before any modes are enterd.

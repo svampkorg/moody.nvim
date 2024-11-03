@@ -6,6 +6,7 @@
 local M = {}
 
 local darken = require("moody.math").darken
+local blend = require("moody.math").blend
 
 local tohex = require("moody.math").int_to_hex_string
 -- local options = require("moody.config").options
@@ -137,5 +138,22 @@ function M.change_hl_property(ns, name, val)
   local old_hl = vim.api.nvim_get_hl(ns and ns or 0, { name = name })
   local new_hl = vim.tbl_extend("force", old_hl, val)
   vim.api.nvim_set_hl(ns and ns or 0, name, new_hl)
+end
+
+---generates a table of colors with a gradient from
+---first (hex format) to second color (hex format) count steps
+---@param first string: hex format #XXXXXX
+---@param second string: hex format #XXXXXX
+---@param steps integer: the number of steps to generate
+---@return table
+function M.generate_gradients(first, second, steps)
+  local colors = {}
+  local increment = 1 / steps
+
+  -- var, limit, step
+  for step = 0, 1, increment do
+    table.insert(colors, blend(first, step, second))
+  end
+  return colors
 end
 return M
