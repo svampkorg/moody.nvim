@@ -66,8 +66,8 @@ statuscolumn.number = function()
 
   local mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
 
-  -- local width = #tostring(vim.api.nvim_buf_line_count(0))
-  local width = vim.opt.numberwidth
+  ---@diagnostic disable-next-line: undefined-field
+  local width = vim.opt.numberwidth:get()
 
   local l_count_width = #tostring(vim.api.nvim_buf_line_count(0))
 
