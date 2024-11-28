@@ -85,6 +85,9 @@ local function setup_ns_and_hlgroups()
     M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
 
     hl(M["ns_" .. mode], "CursorLine", { bg = M.options.hl_blended[mode] })
+    -- hl(M["ns_" .. mode], "CursorLineSign", { bg = M.options.hl_blended[mode] })
+    -- hl(M["ns_" .. mode], "MoodyDiagnosticSign", { bg = M.options.hl_blended[mode] })
+    -- hl(0, "MoodyDiagnosticSign", { bg = M.options.hl_blended[mode] })
     hl(M["ns_" .. mode], "CursorLineInverse", { fg = M.options.hl_blended[mode] })
 
     hl(M["ns_" .. mode], "CursorLineNr", {

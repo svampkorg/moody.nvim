@@ -91,6 +91,7 @@ end
 statuscolumn.sign = function()
   local uncolored_text = "%#DiagnosticSign#"
   local colored_text = "%#MoodyDiagnosticSign#"
+  -- local colored_text = "%#CursorLineSign#"
   return vim.v.relnum == 0 and colored_text .. "%s" or uncolored_text .. "%s"
 end
 
