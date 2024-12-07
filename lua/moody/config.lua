@@ -333,6 +333,12 @@ function M.trigger_mode(event)
   })()
 end
 
+local function setup_statuscolumn()
+  if M.options.fold_options.enabled then
+    vim.cmd("set statuscolumn=%!v:lua.require('moody.statuscolumn').myStatusColumn()")
+  end
+end
+
 --- We will not generate documentation for this function
 --- because it has `__` as prefix. This is the one exception
 --- Setup options by extending defaults with the options proveded by the user
@@ -345,14 +351,7 @@ function M.__setup(options)
 
   -- load up the "colour caches" and setup highlights with it
   setup_ns_and_hlgroups()
-
-  if M.options.fold_options.enabled then
-    vim.api.nvim_set_option_value(
-      "statuscolumn",
-      "%!v:lua.require('moody.statuscolumn').myStatusColumn()",
-      { scope = "global" }
-    )
-  end
+  setup_statuscolumn()
 
   -- A few cases where cursorline is needed to be set to not
   -- have a default gray line before any modes are enterd.
