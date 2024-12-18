@@ -84,10 +84,8 @@ local function setup_ns_and_hlgroups()
   for _, mode in ipairs(M.modes) do
     M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
 
+    -- I use this for my statusline mode indicator
     hl(M["ns_" .. mode], "CursorLine", { bg = M.options.hl_blended[mode] })
-    -- hl(M["ns_" .. mode], "CursorLineSign", { bg = M.options.hl_blended[mode] })
-    -- hl(M["ns_" .. mode], "MoodyDiagnosticSign", { bg = M.options.hl_blended[mode] })
-    -- hl(0, "MoodyDiagnosticSign", { bg = M.options.hl_blended[mode] })
     hl(M["ns_" .. mode], "CursorLineInverse", { fg = M.options.hl_blended[mode] })
 
     hl(M["ns_" .. mode], "CursorLineNr", {
@@ -101,11 +99,7 @@ local function setup_ns_and_hlgroups()
         fg = M.options.hl_unblended[mode],
         bold = M.options.bold_nr,
         bg = M.options.hl_blended[mode],
-        -- force = true,
       })
-
-      -- hl the signcolumn (this will sadly not blend with signs :( )
-      -- hl(M["ns_" .. mode], "CursorLineSign", { bg = M.options.hl_blended[mode] })
     end
 
     if diagnostic then
@@ -148,6 +142,11 @@ local function setup_ns_and_hlgroups()
       M["ns_" .. mode],
       "StatusLineMoody",
       { fg = M.options.hl_unblended[mode], bold = M.options.bold_nr, bg = statusLineHl.bg }
+    )
+    hl(
+      M["ns_" .. mode],
+      "StatusLineMoodyInverted",
+      { bg = M.options.hl_unblended[mode], bold = M.options.bold_nr, fg = statusLineHl.bg }
     )
   end
 
