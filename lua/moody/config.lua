@@ -175,6 +175,7 @@ end
 M.options = {}
 
 ---@type Config
+---@diagnostic disable-next-line: missing-fields
 M.defaults = {
   ---@class Blends
   ---@field normal number: hex value for normal mode color
