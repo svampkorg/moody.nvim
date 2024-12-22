@@ -54,7 +54,8 @@ moody.setup({options})                                         *moody.setup()*
         post_registry_text = "]",
         pre_registry_text = "[",
         right_padding = 2
-      }
+      },
+      reduce_cursorline = false
     }
 
     Parameters: ~
