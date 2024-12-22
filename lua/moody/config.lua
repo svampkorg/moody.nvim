@@ -77,37 +77,45 @@ local function setup_ns_and_hlgroups()
   M.options.hl_unblended = utils.hl_unblended()
   M.options.hl_blended = utils.hl_blended(M.options.blends)
   local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
+  local visualHl = vim.api.nvim_get_hl(0, { name = "Visual" })
+  local visual_default = visualHl.bg
+  local cursorLineHl = vim.api.nvim_get_hl(0, { name = "CursorLine" })
+  local mode_default = cursorLineHl.bg
   local extend = M.options.extend_to_linenr
+  local reduce = M.options.reduce_cursorline
   local show_folds = M.options.fold_options.enabled
   local diagnostic = M.options.extend_to_diagnostic_sign
 
   for _, mode in ipairs(M.modes) do
     M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
 
+    local mode_color_unblended = M.options.hl_unblended[mode]
+    local mode_color_blended = M.options.hl_blended[mode]
+
     -- I use this for my statusline mode indicator
-    hl(M["ns_" .. mode], "CursorLine", { bg = M.options.hl_blended[mode] })
-    hl(M["ns_" .. mode], "CursorLineInverse", { fg = M.options.hl_blended[mode] })
+    hl(M["ns_" .. mode], "CursorLine", { bg = reduce and mode_default or mode_color_blended })
+    hl(M["ns_" .. mode], "CursorLineInverse", { fg = mode_color_blended })
 
     hl(M["ns_" .. mode], "CursorLineNr", {
-      fg = M.options.hl_unblended[mode],
+      fg = mode_color_unblended,
       bold = M.options.bold_nr,
       bg = "none",
     })
 
     if extend then
       hl(M["ns_" .. mode], "CursorLineNr", {
-        fg = M.options.hl_unblended[mode],
+        fg = mode_color_unblended,
         bold = M.options.bold_nr,
-        bg = M.options.hl_blended[mode],
+        bg = reduce and mode_default or mode_color_blended,
       })
     end
 
     if diagnostic then
-      hl(M["ns_" .. mode], "MoodyDiagnosticSignOk", { bg = M.options.hl_blended[mode] })
-      hl(M["ns_" .. mode], "MoodyDiagnosticSignHint", { bg = M.options.hl_blended[mode] })
-      hl(M["ns_" .. mode], "MoodyDiagnosticSignInfo", { bg = M.options.hl_blended[mode] })
-      hl(M["ns_" .. mode], "MoodyDiagnosticSignWarn", { bg = M.options.hl_blended[mode] })
-      hl(M["ns_" .. mode], "MoodyDiagnosticSignError", { bg = M.options.hl_blended[mode] })
+      hl(M["ns_" .. mode], "MoodyDiagnosticSignOk", { bg = mode_color_blended })
+      hl(M["ns_" .. mode], "MoodyDiagnosticSignHint", { bg = mode_color_blended })
+      hl(M["ns_" .. mode], "MoodyDiagnosticSignInfo", { bg = mode_color_blended })
+      hl(M["ns_" .. mode], "MoodyDiagnosticSignWarn", { bg = mode_color_blended })
+      hl(M["ns_" .. mode], "MoodyDiagnosticSignError", { bg = mode_color_blended })
     end
 
     if show_folds then
@@ -122,18 +130,22 @@ local function setup_ns_and_hlgroups()
         -- set the hl for foldcolumn for not current line
         hl(M["ns_" .. mode], "FoldLevel_" .. level, { fg = color })
         if mode == "visual" then
-          hl(M["ns_" .. mode], "FoldLevelVisual_" .. level, { fg = color, bg = M.options.hl_blended[mode] })
+          hl(
+            M["ns_" .. mode],
+            "FoldLevelVisual_" .. level,
+            { fg = color, bg = reduce and mode_default or mode_color_blended }
+          )
         end
 
         -- settings for fold, and in case of ufo UfoCursorFoldedLine
-        hl(M["ns_" .. mode], "FoldColumn", { bg = M.options.hl_blended[mode] })
-        hl(M["ns_" .. mode], "UfoCursorFoldedLine", { bg = M.options.hl_blended[mode] })
+        hl(M["ns_" .. mode], "FoldColumn", { bg = reduce and mode_default or mode_color_blended })
+        hl(M["ns_" .. mode], "UfoCursorFoldedLine", { bg = reduce and mode_default or mode_color_blended })
 
         -- set the hl for foldcolumn for current line
         hl(
           M["ns_" .. mode],
           "CursorLineFoldLevel_" .. level,
-          { bg = extend and M.options.hl_blended[mode] or "none", fg = color }
+          { bg = extend and (reduce and mode_default or mode_color_blended) or "none", fg = color }
         )
       end
     end
@@ -141,24 +153,24 @@ local function setup_ns_and_hlgroups()
     hl(
       M["ns_" .. mode],
       "StatusLineMoody",
-      { fg = M.options.hl_unblended[mode], bold = M.options.bold_nr, bg = statusLineHl.bg }
+      { fg = mode_color_unblended, bold = M.options.bold_nr, bg = statusLineHl.bg }
     )
     hl(
       M["ns_" .. mode],
       "StatusLineMoodyInverted",
-      { bg = M.options.hl_unblended[mode], bold = M.options.bold_nr, fg = statusLineHl.bg }
+      { bg = mode_color_unblended, bold = M.options.bold_nr, fg = statusLineHl.bg }
     )
   end
 
   -- visual need special treatment
   ---@diagnostic disable-next-line: undefined-field
-  vim.api.nvim_set_hl(M.ns_visual, "Visual", { bg = M.options.hl_blended.visual })
+  vim.api.nvim_set_hl(M.ns_visual, "Visual", { bg = reduce and visual_default or M.options.hl_blended.visual })
 
   -- Special hl group in global ns for use where you might want just a normal cursorline
-  vim.api.nvim_set_hl(0, "MoodyNormal", { bg = M.options.hl_blended.normal })
+  vim.api.nvim_set_hl(0, "MoodyNormal", { bg = reduce and mode_default or M.options.hl_blended.normal })
 
   -- normal cursorline for global ns
-  vim.api.nvim_set_hl(0, "CursorLine", { bg = M.options.hl_blended.normal })
+  vim.api.nvim_set_hl(0, "CursorLine", { bg = reduce and mode_default or M.options.hl_blended.normal })
 end
 
 ---@class Config
@@ -167,6 +179,7 @@ end
 ---@field disabled_filetypes table<string>: List of filetypes to disable this plugin for
 ---@field disabled_buftypes table<string>: List of buffers to disable this plugin for
 ---@field bold_nr boolean: bold linenumbers or not
+---@field reduce_cursorline boolean: bold linenumbers or not
 ---@field extend_to_linenr boolean: extend the cursorline into linenumbers
 ---@field extend_to_linenr_visual boolean: extend the cursorline into linenumbers
 ---@field recording Recording: bold linenumbers or not
@@ -234,6 +247,8 @@ M.defaults = {
   disabled_buftypes = {},
   ---@type boolean
   bold_nr = true,
+  ---@type boolean
+  reduce_cursorline = false,
   ---@type boolean
   extend_to_linenr = false,
   ---@type boolean
