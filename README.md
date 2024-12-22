@@ -95,10 +95,15 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
             right_padding = 2,
         },
         -- extend the cursorline to cover line numbers. 
-        -- This enables moodys built in statuscolumn to cover linenr in visual selection
-        -- to show the visual range of the selection highlighted by Visual hl group.
         extend_to_linenr = true,
+        -- extend_to_linenr_visual enables moodys built in statuscolumn to cover linenr in
+        -- visual selection to show the visual range of the selection highlighted by 
+        -- Visual hl group.
         extend_to_linenr_visual = false,
+        -- setting reduce_cursorline to true will reduce the moodys cursorline to.. nothing! 
+        -- It will make the cursorline have the default value of whatever cursorline has in the
+        -- default "hightlight namespace", 0. TLDR: no moody change in cursorline with ModeChanged.
+        reduce_cursorline = false,
         -- fold_options.enabled also enables the built in SignColumn in moody. These folds takes a bit of a different
         -- approach to showing folds and their range. Try it out and see if you like it :) If not you can use
         -- the SignColumn as is, with extend_to_linenr. It will then only show diagnostic signs and linenr.
