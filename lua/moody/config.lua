@@ -263,72 +263,57 @@ function M.trigger_mode(event)
   local mode = string.match(event.match, ".*:([^:]+)")
   local win = vim.api.nvim_get_current_win()
 
-  -- local currentMode = "normal"
-
   utils.switch(mode, {
     ["n"] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_normal)
-      -- currentMode = "normal"
     end,
     ["i"] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_insert)
-      -- currentMode = "insert"
     end,
     ["ix"] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_insert)
-      -- currentMode = "insert"
     end,
     ["v"] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
-      -- currentMode = "visual"
     end,
     ["V"] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
-      -- currentMode = "visual"
     end,
     [""] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
-      -- currentMode = "visual"
     end,
     ["c"] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_command)
-      -- currentMode = "command"
     end,
     ["r"] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_replace)
-      -- currentMode = "replace"
     end,
     ["s"] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_select)
-      -- currentMode = "select"
     end,
     ["t"] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_terminal)
-      -- currentMode = "terminal"
     end,
     ["nt"] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_terminal_n)
-      -- currentMode = "terminal_n"
     end,
     ["no"] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_operator)
-      -- currentMode = "operator"
     end,
     ["default"] = function()
       vim.api.nvim_set_hl_ns(0)
-      -- currentMode = "default"
     end,
   })()
 end
