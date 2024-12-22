@@ -99,10 +99,10 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
         -- to show the visual range of the selection highlighted by Visual hl group.
         extend_to_linenr = true,
         extend_to_linenr_visual = false,
-        -- fold_options.enabled also enables the built in statuscolumn in moody. These folds takes a bit of a different
+        -- fold_options.enabled also enables the built in SignColumn in moody. These folds takes a bit of a different
         -- approach to showing folds and their range. Try it out and see if you like it :) If not you can use
-        -- the statuscolumn as is, with extend_to_linenr. It will then only show diagnostic signs and linenr.
-        -- This requires nvim-ufo.
+        -- the SignColumn as is, with extend_to_linenr. It will then only show diagnostic signs and linenr.
+        -- This requires nvim-ufo, and will possibly break your current custom SignColumn (if you have any)
         fold_options = {
             enabled = false,
             -- these are two colors you can specifiy which will be used to generate a gradient
