@@ -37,6 +37,8 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
         -- or whatever "colorscheme" you use to setup your HL groups :)
         -- Colours can also be set within setup, in which case this is redundant.
         "catppuccin/nvim",
+        -- for seeing Moody's take on folds
+        "kevinhwang91/nvim-ufo"
     },
     opts = {
         -- you can set different blend values for your different modes.
@@ -100,6 +102,7 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
         -- fold_options.enabled also enables the built in statuscolumn in moody. These folds takes a bit of a different
         -- approach to showing folds and their range. Try it out and see if you like it :) If not you can use
         -- the statuscolumn as is, with extend_to_linenr. It will then only show diagnostic signs and linenr.
+        -- This requires nvim-ufo.
         fold_options = {
             enabled = false,
             -- these are two colors you can specifiy which will be used to generate a gradient
