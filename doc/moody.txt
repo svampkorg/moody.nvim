@@ -40,13 +40,13 @@ moody.setup({options})                                         *moody.setup()*
       },
       disabled_buftypes = {},
       disabled_filetypes = {},
-      extend_to_diagnostic_sign = true,
+      extend_to_folds = false,
       extend_to_linenr = false,
-      extend_to_linenr_visual = false,
-      fold_options = {
+      extend_to_signs = false,
+      moody_column = {
         enabled = false,
-        end_color = "#2F2F2F",
-        start_color = "#C1C1C1"
+        folds_end_color = "#2F2F2F",
+        folds_start_color = "#C1C1C1"
       },
       recording = {
         enabled = false,
