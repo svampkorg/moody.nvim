@@ -4,14 +4,10 @@ local error = ffi.new("Error")
 
 local statuscolumn = {}
 
-local moody_config = require("moody.config")
+-- local moody_config = require("moody.config")
 -- local utils = require("moody.utils")
 
 -- options for extending cursorline to linenumbers and also using moody's statuscolumn
-local extend_to_linenr = moody_config.options.extend_to_linenr
-local show_folds = moody_config.options.fold_options.enabled
-local extend_to_linenr_visual = moody_config.options.extend_to_linenr_visual
-local extend_and_folds = extend_to_linenr and show_folds
 
 function statuscolumn.char_on_pos(pos)
   pos = pos or vim.fn.getpos(".")
@@ -79,7 +75,7 @@ statuscolumn.number = function()
     return len < 1 and " " .. n or (" "):rep(len + 1) .. n
   end
 
-  if mode == "v" and extend_to_linenr_visual then
+  if mode == "v" then
     local v_range = statuscolumn.get_visual_range()
     local is_in_range = vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
     return is_in_range and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum)
@@ -88,12 +84,12 @@ statuscolumn.number = function()
   return vim.v.relnum == 0 and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum)
 end
 
-statuscolumn.sign = function()
-  local uncolored_text = "%#DiagnosticSign#"
-  local colored_text = "%#MoodyDiagnosticSign#"
-  -- local colored_text = "%#CursorLineSign#"
-  return vim.v.relnum == 0 and colored_text .. "%s" or uncolored_text .. "%s"
-end
+-- statuscolumn.sign = function()
+--   local uncolored_text = "%#DiagnosticSign#"
+--   local colored_text = "%#MoodyDiagnosticSign#"
+--   -- local colored_text = "%#CursorLineSign#"
+--   return vim.v.relnum == 0 and colored_text .. "%s" or uncolored_text .. "%s"
+-- end
 
 -- local diagnostic_lookup = {
 --   [1] = "Error",
@@ -124,7 +120,7 @@ statuscolumn.myStatusColumn = function()
     "%=", -- right align
     statuscolumn.number(), -- numbers
     " ", -- extra padding before..
-    show_folds and statuscolumn.folds() or "", -- maybe folds, and after that your code! (.. maybe)
+    statuscolumn.folds(), -- maybe folds, and after that your code! (.. maybe)
   })
 
   return text
@@ -173,13 +169,13 @@ statuscolumn.folds = function()
   end
 
   local string = is_curline and "%#CursorLineFoldLevel_" .. level .. "#"
-    or (is_visual_and_range and extend_and_folds and "%#FoldLevelVisual_" .. level .. "#")
+    or (is_visual_and_range and "%#FoldLevelVisual_" .. level .. "#")
     or ("%#FoldLevel_" .. level .. "#")
     or "%#FoldColumn#"
   local after_level = after_foldinfo.level
 
   if level == 0 then
-    return string .. (is_visual_and_range and extend_and_folds and "%#Visual" .. "# " or " "):rep(width) .. "%*"
+    return string .. (is_visual_and_range and "%#Visual" .. "# " or " "):rep(width) .. "%*"
   end
 
   local foldclosed = foldinfo.lines > 0

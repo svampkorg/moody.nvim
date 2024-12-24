@@ -76,15 +76,19 @@ end
 local function setup_ns_and_hlgroups()
   M.options.hl_unblended = utils.hl_unblended()
   M.options.hl_blended = utils.hl_blended(M.options.blends)
+
   local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
   local visualHl = vim.api.nvim_get_hl(0, { name = "Visual" })
-  local visual_default = visualHl.bg
   local cursorLineHl = vim.api.nvim_get_hl(0, { name = "CursorLine" })
-  local mode_default = cursorLineHl.bg
-  local extend = M.options.extend_to_linenr
-  local reduce = M.options.reduce_cursorline
-  local show_folds = M.options.fold_options.enabled
-  local diagnostic = M.options.extend_to_diagnostic_sign
+
+  local visual_default_bg = visualHl.bg
+  local cursorline_default_bg = cursorLineHl.bg
+
+  local extend_to_linenr = M.options.extend_to_linenr
+  local reduce_cursorline = M.options.reduce_cursorline
+  local extend_to_signs = M.options.extend_to_signs
+  local extend_to_folds = M.options.extend_to_folds
+  local moody_column = M.options.moody_column
 
   for _, mode in ipairs(M.modes) do
     M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
@@ -92,8 +96,7 @@ local function setup_ns_and_hlgroups()
     local mode_color_unblended = M.options.hl_unblended[mode]
     local mode_color_blended = M.options.hl_blended[mode]
 
-    -- I use this for my statusline mode indicator
-    hl(M["ns_" .. mode], "CursorLine", { bg = reduce and mode_default or mode_color_blended })
+    hl(M["ns_" .. mode], "CursorLine", { bg = reduce_cursorline and cursorline_default_bg or mode_color_blended })
     hl(M["ns_" .. mode], "CursorLineInverse", { fg = mode_color_blended })
 
     hl(M["ns_" .. mode], "CursorLineNr", {
@@ -102,29 +105,44 @@ local function setup_ns_and_hlgroups()
       bg = "none",
     })
 
-    if extend then
+    -- I use this for my statusline mode indicator
+    hl(M["ns_" .. mode], "StatusLineMoody", {
+      fg = mode_color_unblended,
+      bold = M.options.bold_nr,
+      bg = statusLineHl.bg,
+    })
+    hl(M["ns_" .. mode], "StatusLineMoodyInverted", {
+      bg = mode_color_unblended,
+      bold = M.options.bold_nr,
+      fg = statusLineHl.bg,
+    })
+
+    if extend_to_linenr then
       hl(M["ns_" .. mode], "CursorLineNr", {
         fg = mode_color_unblended,
         bold = M.options.bold_nr,
-        bg = reduce and mode_default or mode_color_blended,
+        bg = reduce_cursorline and cursorline_default_bg or mode_color_blended,
       })
     end
 
-    if diagnostic then
-      hl(M["ns_" .. mode], "MoodyDiagnosticSignOk", { bg = mode_color_blended })
-      hl(M["ns_" .. mode], "MoodyDiagnosticSignHint", { bg = mode_color_blended })
-      hl(M["ns_" .. mode], "MoodyDiagnosticSignInfo", { bg = mode_color_blended })
-      hl(M["ns_" .. mode], "MoodyDiagnosticSignWarn", { bg = mode_color_blended })
-      hl(M["ns_" .. mode], "MoodyDiagnosticSignError", { bg = mode_color_blended })
+    if extend_to_signs then
+      hl(M["ns_" .. mode], "CursorLineSign", {
+        bg = reduce_cursorline and cursorline_default_bg or mode_color_blended,
+      })
     end
 
-    if show_folds then
+    if extend_to_folds then
+      hl(M["ns_" .. mode], "CursorLineFold", {
+        bg = reduce_cursorline and cursorline_default_bg or mode_color_blended,
+      })
+    end
+
+    if moody_column.enabled then
       local fold_colors = utils.generate_gradients(
-        M.options.fold_options.start_color,
-        M.options.fold_options.end_color,
+        M.options.moody_column.folds_start_color,
+        M.options.moody_column.folds_end_color,
         vim.o.foldnestmax
       )
-
       -- for fold levels
       for level, color in ipairs(fold_colors) do
         -- set the hl for foldcolumn for not current line
@@ -133,44 +151,46 @@ local function setup_ns_and_hlgroups()
           hl(
             M["ns_" .. mode],
             "FoldLevelVisual_" .. level,
-            { fg = color, bg = reduce and mode_default or mode_color_blended }
+            { fg = color, bg = reduce_cursorline and cursorline_default_bg or mode_color_blended }
           )
         end
-
         -- settings for fold, and in case of ufo UfoCursorFoldedLine
-        hl(M["ns_" .. mode], "FoldColumn", { bg = reduce and mode_default or mode_color_blended })
-        hl(M["ns_" .. mode], "UfoCursorFoldedLine", { bg = reduce and mode_default or mode_color_blended })
-
-        -- set the hl for foldcolumn for current line
         hl(
           M["ns_" .. mode],
-          "CursorLineFoldLevel_" .. level,
-          { bg = extend and (reduce and mode_default or mode_color_blended) or "none", fg = color }
+          "UfoCursorFoldedLine",
+          { bg = reduce_cursorline and cursorline_default_bg or mode_color_blended }
         )
+
+        -- set the hl for foldcolumn for current line
+        hl(M["ns_" .. mode], "CursorLineFoldLevel_" .. level, {
+          bg = extend_to_linenr and (reduce_cursorline and cursorline_default_bg or mode_color_blended) or "none",
+          fg = color,
+        })
       end
     end
-
-    hl(
-      M["ns_" .. mode],
-      "StatusLineMoody",
-      { fg = mode_color_unblended, bold = M.options.bold_nr, bg = statusLineHl.bg }
-    )
-    hl(
-      M["ns_" .. mode],
-      "StatusLineMoodyInverted",
-      { bg = mode_color_unblended, bold = M.options.bold_nr, fg = statusLineHl.bg }
-    )
   end
 
   -- visual need special treatment
-  ---@diagnostic disable-next-line: undefined-field
-  vim.api.nvim_set_hl(M.ns_visual, "Visual", { bg = reduce and visual_default or M.options.hl_blended.visual })
+  vim.api.nvim_set_hl(
+    ---@diagnostic disable-next-line: undefined-field
+    M.ns_visual,
+    "Visual",
+    { bg = reduce_cursorline and visual_default_bg or M.options.hl_blended.visual }
+  )
 
   -- Special hl group in global ns for use where you might want just a normal cursorline
-  vim.api.nvim_set_hl(0, "MoodyNormal", { bg = reduce and mode_default or M.options.hl_blended.normal })
+  vim.api.nvim_set_hl(
+    0,
+    "MoodyNormal",
+    { bg = reduce_cursorline and cursorline_default_bg or M.options.hl_blended.normal }
+  )
 
   -- normal cursorline for global ns
-  vim.api.nvim_set_hl(0, "CursorLine", { bg = reduce and mode_default or M.options.hl_blended.normal })
+  vim.api.nvim_set_hl(
+    0,
+    "CursorLine",
+    { bg = reduce_cursorline and cursorline_default_bg or M.options.hl_blended.normal }
+  )
 end
 
 ---@class Config
@@ -181,10 +201,10 @@ end
 ---@field bold_nr boolean: bold linenumbers or not
 ---@field reduce_cursorline boolean: bold linenumbers or not
 ---@field extend_to_linenr boolean: extend the cursorline into linenumbers
----@field extend_to_linenr_visual boolean: extend the cursorline into linenumbers
 ---@field recording Recording: bold linenumbers or not
----@field fold_options FoldOptions: settings for the statuscolumn folds
----@field extend_to_diagnostic_sign boolean: extend the cursorline to diagnostic sign
+---@field extend_to_signs boolean: textend to signcolumn
+---@field extend_to_folds boolean: textend to foldcolumn
+---@field moody_column MoodyColumn: settings for the statuscolumn folds
 M.options = {}
 
 ---@type Config
@@ -232,14 +252,14 @@ M.defaults = {
     terminal = "#4CD4BD",
     terminal_n = "#00BBCC",
   },
-  ---@class FoldOptions
-  ---@field enabled boolean: enable using moody folds
-  ---@field start_color string: hex format start color for fold levels
-  ---@field end_color string: hex format end color for fold levels
-  fold_options = {
+  ---@class MoodyColumn
+  ---@field enabled boolean: extend moody to statuscolumn
+  ---@field folds_start_color string: hex format start color for fold levels
+  ---@field folds_end_color string: hex format end color for fold levels
+  moody_column = {
     enabled = false,
-    start_color = "#C1C1C1",
-    end_color = "#2F2F2F",
+    folds_start_color = "#C1C1C1",
+    folds_end_color = "#2F2F2F",
   },
   ---@type table<string>
   disabled_filetypes = {},
@@ -252,9 +272,9 @@ M.defaults = {
   ---@type boolean
   extend_to_linenr = false,
   ---@type boolean
-  extend_to_linenr_visual = false,
+  extend_to_signs = false,
   ---@type boolean
-  extend_to_diagnostic_sign = true,
+  extend_to_folds = false,
   ---@class Recording
   ---@field enabled boolean: set to true to enable recording indicator
   ---@field icon string: set an icon to show next to the register indicator
@@ -334,7 +354,7 @@ function M.trigger_mode(event)
 end
 
 local function setup_statuscolumn()
-  if M.options.fold_options.enabled then
+  if M.options.moody_column.enabled then
     vim.cmd("set statuscolumn=%!v:lua.require('moody.statuscolumn').myStatusColumn()")
   end
 end
@@ -351,7 +371,11 @@ function M.__setup(options)
 
   -- load up the "colour caches" and setup highlights with it
   setup_ns_and_hlgroups()
-  setup_statuscolumn()
+
+  if M.options.moody_column.enabled then
+    -- setup signcolumn
+    setup_statuscolumn()
+  end
 
   -- A few cases where cursorline is needed to be set to not
   -- have a default gray line before any modes are enterd.
