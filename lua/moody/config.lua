@@ -80,9 +80,17 @@ local function setup_ns_and_hlgroups()
   local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
   local visualHl = vim.api.nvim_get_hl(0, { name = "Visual" })
   local cursorLineHl = vim.api.nvim_get_hl(0, { name = "CursorLine" })
+  -- local cursorLineSignHl = vim.api.nvim_get_hl(0, { name = "CursorLineSign" })
+  -- local cursorLineFoldHl = vim.api.nvim_get_hl(0, { name = "CursorLineFold" })
+  -- local signColumnHL = vim.api.nvim_get_hl(0, { name = "SignColumn" })
+  -- local foldColumnHL = vim.api.nvim_get_hl(0, { name = "FoldColumn" })
 
   local visual_default_bg = visualHl.bg
   local cursorline_default_bg = cursorLineHl.bg
+  -- local cursorline_sign_default_bg = cursorLineSignHl.bg
+  -- local cursorline_fold_default_bg = cursorLineFoldHl.bg
+  -- local sign_default_bg = cursorLineSignHl.bg
+  -- local fold_default_bg = cursorLineFoldHl.bg
 
   local extend_to_linenr = M.options.extend_to_linenr
   local reduce_cursorline = M.options.reduce_cursorline
@@ -102,6 +110,12 @@ local function setup_ns_and_hlgroups()
     hl(M["ns_" .. mode], "CursorLineNr", {
       fg = mode_color_unblended,
       bold = M.options.bold_nr,
+      bg = "none",
+    })
+    hl(M["ns_" .. mode], "CursorLineSign", {
+      bg = "none",
+    })
+    hl(M["ns_" .. mode], "CursorLineFold", {
       bg = "none",
     })
 
@@ -163,6 +177,7 @@ local function setup_ns_and_hlgroups()
 
         -- set the hl for foldcolumn for current line
         hl(M["ns_" .. mode], "CursorLineFoldLevel_" .. level, {
+          -- extend_to_linenr because folds come before linenr
           bg = extend_to_linenr and (reduce_cursorline and cursorline_default_bg or mode_color_blended) or "none",
           fg = color,
         })
