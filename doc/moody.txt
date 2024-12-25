@@ -38,6 +38,7 @@ moody.setup({options})                                         *moody.setup()*
         terminal_n = "#00BBCC",
         visual = "#AD6FF7"
       },
+      default_cursorline = false,
       disabled_buftypes = {},
       disabled_filetypes = {},
       extend_to_folds = false,
@@ -45,6 +46,7 @@ moody.setup({options})                                         *moody.setup()*
       extend_to_signs = false,
       moody_column = {
         enabled = false,
+        extend_to = false,
         folds_end_color = "#2F2F2F",
         folds_start_color = "#C1C1C1"
       },
@@ -54,8 +56,7 @@ moody.setup({options})                                         *moody.setup()*
         post_registry_text = "]",
         pre_registry_text = "[",
         right_padding = 2
-      },
-      reduce_cursorline = false
+      }
     }
 
     Parameters: ~
