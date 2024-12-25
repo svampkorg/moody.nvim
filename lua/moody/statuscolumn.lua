@@ -4,8 +4,13 @@ local error = ffi.new("Error")
 
 local statuscolumn = {}
 
--- local moody_config = require("moody.config")
+local moody_config = require("moody.config")
 -- local utils = require("moody.utils")
+
+local extend_to_linenr = moody_config.options.extend_to_linenr
+local extend_to_signs = moody_config.options.extend_to_signs
+local extend_to_folds = moody_config.options.extend_to_folds
+local extend = extend_to_linenr and extend_to_signs and extend_to_folds
 
 -- options for extending cursorline to linenumbers and also using moody's statuscolumn
 
@@ -78,10 +83,12 @@ statuscolumn.number = function()
   if mode == "v" then
     local v_range = statuscolumn.get_visual_range()
     local is_in_range = vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
-    return is_in_range and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum)
+    return is_in_range and extend_to_linenr and colored_text .. pad_start(vim.v.lnum)
+      or uncolored_text .. pad_start(vim.v.relnum)
   end
 
-  return vim.v.relnum == 0 and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum)
+  return vim.v.relnum == 0 and extend_to_linenr and colored_text .. pad_start(vim.v.lnum)
+    or uncolored_text .. pad_start(vim.v.relnum)
 end
 
 -- statuscolumn.sign = function()
@@ -169,13 +176,15 @@ statuscolumn.folds = function()
   end
 
   local string = is_curline and "%#CursorLineFoldLevel_" .. level .. "#"
-    or (is_visual_and_range and "%#FoldLevelVisual_" .. level .. "#")
+    or (is_visual_and_range and extend_to_linenr and extend_to_folds and "%#FoldLevelVisual_" .. level .. "#")
     or ("%#FoldLevel_" .. level .. "#")
     or "%#FoldColumn#"
   local after_level = after_foldinfo.level
 
   if level == 0 then
-    return string .. (is_visual_and_range and "%#Visual" .. "# " or " "):rep(width) .. "%*"
+    return string
+      .. (is_visual_and_range and extend_to_linenr and extend_to_folds and "%#Visual" .. "# " or " "):rep(width)
+      .. "%*"
   end
 
   local foldclosed = foldinfo.lines > 0
