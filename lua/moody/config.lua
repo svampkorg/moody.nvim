@@ -123,12 +123,12 @@ local function setup_ns_and_hlgroups()
     hl(M["ns_" .. mode], "StatusLineMoody", {
       fg = mode_color_unblended,
       bold = M.options.bold_nr,
-      bg = statusLineHl.bg,
+      bg = mode_color_blended,
     })
     hl(M["ns_" .. mode], "StatusLineMoodyInverted", {
       bg = mode_color_unblended,
       bold = M.options.bold_nr,
-      fg = statusLineHl.bg,
+      fg = mode_color_blended,
     })
 
     if extend_to_linenr then
@@ -185,8 +185,9 @@ local function setup_ns_and_hlgroups()
     end
   end
 
-  -- visual need special treatment
-  vim.api.nvim_set_hl(
+  -- visual need special treatment because neovim does
+  -- not seem to use namespace specified hl group for Visual.
+  hl(
     ---@diagnostic disable-next-line: undefined-field
     M.ns_visual,
     "Visual",
@@ -194,11 +195,7 @@ local function setup_ns_and_hlgroups()
   )
 
   -- Special hl group in global ns for use where you might want just a normal cursorline
-  vim.api.nvim_set_hl(
-    0,
-    "MoodyNormal",
-    { bg = default_cursorline and cursorline_default_bg or M.options.hl_blended.normal }
-  )
+  hl(0, "MoodyNormal", { bg = default_cursorline and cursorline_default_bg or M.options.hl_blended.normal })
 
   -- normal cursorline for global ns
   -- vim.api.nvim_set_hl(0, "CursorLine", { bg = cursorline_default_bg })
@@ -277,7 +274,11 @@ M.defaults = {
   ---@type table<string>
   disabled_filetypes = {},
   ---@type table<string>
-  disabled_buftypes = {},
+  disabled_buftypes = {
+    "nofile",
+    "terminal",
+    "prompt",
+  },
   ---@type boolean
   bold_nr = true,
   ---@type boolean
