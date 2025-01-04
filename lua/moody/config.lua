@@ -203,9 +203,6 @@ local function setup_ns_and_hlgroups()
 
   -- Special hl group in global ns for use where you might want just a normal cursorline
   hl(0, "MoodyNormal", { bg = default_cursorline and cursorline_default_bg or M.options.hl_blended.normal })
-
-  -- normal cursorline for global ns
-  -- vim.api.nvim_set_hl(0, "CursorLine", { bg = cursorline_default_bg })
 end
 
 ---@class Config
