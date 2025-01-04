@@ -35,7 +35,7 @@ function M.blend(foreground, alpha, background)
   local bg = M.rgb(background or M.bg)
   local fg = M.rgb(foreground or M.fg)
 
-  local blendChannel = function(i)
+  local function blendChannel(i)
     local ret = (alpha * fg[i] + ((1 - alpha) * bg[i]))
     return math.floor(math.min(math.max(0, ret), 255) + 0.5)
   end

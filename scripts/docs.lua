@@ -2,7 +2,7 @@ local docgen = require("docgen")
 
 local docs = {}
 
-docs.test = function()
+function docs.test()
   -- Filepaths that should generate docs
   local input_files = {
     "./lua/moody/init.lua",
