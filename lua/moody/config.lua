@@ -20,11 +20,11 @@ local utils = require("moody.utils")
 
 M.sl_mark = vim.api.nvim_create_namespace("moodyline")
 
-M.set_sl_mark = function(buffer, line, col, opts)
+function M.functionset_sl_mark(buffer, line, col, opts)
   M.sl_id = vim.api.nvim_buf_set_extmark(buffer, M.sl_mark, line, col, opts)
 end
 
-M.del_sl_mark = function(buffer)
+function M.del_sl_mark(buffer)
   if not M.sl_mark or not M.sl_id then
     return
   end
@@ -537,7 +537,7 @@ end
 
 ---Format the defaults options table for documentation
 ---@return table
-M.__format_keys = function()
+function M.__format_keys()
   local tbl = vim.split(vim.inspect(M.defaults), "\n")
   table.insert(tbl, 1, "<pre>")
   table.insert(tbl, 2, "Defaults: ~")

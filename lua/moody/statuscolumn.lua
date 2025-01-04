@@ -2,18 +2,19 @@ local ffi = require("ffidef")
 local C = ffi.C
 local error = ffi.new("Error")
 
-local statuscolumn = {}
+-- local statuscolumn = {}
 
+local M = {}
 -- options for extending cursorline to linenumbers and also using moody's statuscolumn
 
-function statuscolumn.char_on_pos(pos)
+local function char_on_pos(pos)
   pos = pos or vim.fn.getpos(".")
   return tostring(vim.fn.getline(pos[1])):sub(pos[2], pos[2])
 end
 
 -- borrowed from https://github.com/Wansmer/nvim-config/blob/main/lua/utils.lua#L83
 -- From: https://neovim.discourse.group/t/how-do-you-work-with-strings-with-multibyte-characters-in-lua/2437/4
-function statuscolumn.char_byte_count(s, i)
+local function char_byte_count(s, i)
   if not s or s == "" then
     return 1
   end
@@ -32,12 +33,12 @@ function statuscolumn.char_byte_count(s, i)
   end
 end
 
-function statuscolumn.get_visual_range()
+local function get_visual_range()
   local sr, sc = unpack(vim.fn.getpos("v"), 2, 3)
   local er, ec = unpack(vim.fn.getpos("."), 2, 3)
 
   -- To correct work with non-single byte chars
-  local byte_c = statuscolumn.char_byte_count(statuscolumn.char_on_pos({ er, ec }))
+  local byte_c = char_byte_count(char_on_pos({ er, ec }))
   ec = ec + (byte_c - 1)
 
   local range
@@ -54,7 +55,7 @@ function statuscolumn.get_visual_range()
   return range
 end
 
-statuscolumn.number = function()
+local function number()
   local uncolored_text = "%#LineNr#"
   local colored_text = "%#CursorLineNr#"
 
@@ -73,7 +74,7 @@ statuscolumn.number = function()
   end
 
   if mode == "v" then
-    local v_range = statuscolumn.get_visual_range()
+    local v_range = get_visual_range()
     local is_in_range = vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
     return is_in_range and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum)
   end
@@ -81,7 +82,7 @@ statuscolumn.number = function()
   return vim.v.relnum == 0 and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum)
 end
 
-statuscolumn.sign = function()
+local function sign()
   -- local uncolored_text = "%#DiagnosticSign#"
   local uncolored_text = "%#SignColumn#"
   -- local colored_text = "%#MoodyDiagnosticSign#"
@@ -105,27 +106,7 @@ end
 --   -- utils.P(diagnostic.user_data and diagnostic.user_data.lsp.severity or "no diagnostics")
 -- end
 
-statuscolumn.myStatusColumn = function()
-  local text = ""
-
-  local win = vim.g.statusline_winid
-  if vim.api.nvim_get_current_win() ~= win then
-    return text
-  end
-
-  text = table.concat({
-    -- "%s", -- symbols
-    statuscolumn.sign(),
-    "%=", -- right align
-    statuscolumn.number(), -- numbers
-    " ", -- extra padding before..
-    statuscolumn.folds(), -- maybe folds, and after that your code! (.. maybe)
-  })
-
-  return text
-end
-
-statuscolumn.folds = function()
+local function folds()
   local win = vim.g.statusline_winid
   local wp = C.find_window_by_handle(win, error)
   local opts = { win = win }
@@ -163,7 +144,7 @@ statuscolumn.folds = function()
 
   local is_visual_and_range = false
   if mode == "v" then
-    local v_range = statuscolumn.get_visual_range()
+    local v_range = get_visual_range()
     is_visual_and_range = vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
   end
 
@@ -212,4 +193,24 @@ statuscolumn.folds = function()
   return string .. "%*"
 end
 
-return statuscolumn
+function M.myStatusColumn()
+  local text = ""
+
+  local win = vim.g.statusline_winid
+  if vim.api.nvim_get_current_win() ~= win then
+    return text
+  end
+
+  text = table.concat({
+    -- "%s", -- symbols
+    sign(),
+    "%=", -- right align
+    number(), -- numbers
+    " ", -- extra padding before..
+    folds(), -- maybe folds, and after that your code! (.. maybe)
+  })
+
+  return text
+end
+
+return M
