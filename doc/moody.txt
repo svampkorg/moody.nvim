@@ -41,6 +41,7 @@ moody.setup({options})                                         *moody.setup()*
       default_cursorline = false,
       disabled_buftypes = { "nofile", "terminal", "prompt" },
       disabled_filetypes = {},
+      disabled_list = {},
       extend_to_folds = false,
       extend_to_linenr = false,
       extend_to_signs = false,
