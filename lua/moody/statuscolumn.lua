@@ -9,7 +9,19 @@ local M = {}
 
 local function char_on_pos(pos)
   pos = pos or vim.fn.getpos(".")
+  ---@diagnostic disable-next-line: undefined-global, undefined-field
   return tostring(vim.fn.getline(pos[1])):sub(pos[2], pos[2])
+end
+
+local function pad_start(n)
+  ---@diagnostic disable-next-line: undefined-field
+  local width = vim.opt.numberwidth:get()
+
+  local l_count_width = #tostring(vim.api.nvim_buf_line_count(0))
+
+  width = width >= l_count_width and width or l_count_width
+  local len = width - #tostring(n)
+  return len < 1 and " " .. n or (" "):rep(len + 1) .. n
 end
 
 -- borrowed from https://github.com/Wansmer/nvim-config/blob/main/lua/utils.lua#L83
@@ -58,20 +70,13 @@ end
 local function number()
   local uncolored_text = "%#LineNr#"
   local colored_text = "%#CursorLineNr#"
-
-  local mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
+  --
+  -- if not extend_to_linenr then
+  --   return uncolored_text .. pad_start(vim.v.relnum)
+  -- end
 
   ---@diagnostic disable-next-line: undefined-field
-  local width = vim.opt.numberwidth:get()
-
-  local l_count_width = #tostring(vim.api.nvim_buf_line_count(0))
-
-  width = width >= l_count_width and width or l_count_width
-
-  local function pad_start(n)
-    local len = width - #tostring(n)
-    return len < 1 and " " .. n or (" "):rep(len + 1) .. n
-  end
+  local mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
 
   if mode == "v" then
     local v_range = get_visual_range()
@@ -82,29 +87,38 @@ local function number()
   return vim.v.relnum == 0 and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum)
 end
 
-local function sign()
-  -- local uncolored_text = "%#DiagnosticSign#"
-  local uncolored_text = "%#SignColumn#"
-  -- local colored_text = "%#MoodyDiagnosticSign#"
-  local colored_text = "%#CursorLineSign#"
-  -- local colored_text = "%#CursorLineSign#"
-  return vim.v.relnum == 0 and colored_text .. "%s" or uncolored_text .. "%s"
-end
-
--- local diagnostic_lookup = {
---   [1] = "Error",
---   [2] = "Warn",
---   [3] = "Info",
---   [4] = "Hint",
--- }
--- statuscolumn.get_diagnostic_for_line = function()
---   local diagnostic = vim.diagnostic.get(0, { lnum = vim.v.lnum - 1 })
---   local severity = diagnostic["severity"]
---   if severity then
---     utils.P("severity" .. diagnostic_lookup[severity])
---   end
---   -- utils.P(diagnostic.user_data and diagnostic.user_data.lsp.severity or "no diagnostics")
+-- local function sign()
+--   -- local uncolored_text = "%#SignColumn#"
+--   -- local colored_text = "%#CursorLineSign#"
+--
+--   -- local text_hl = "%#CursorLineSign#" or "%#SignColumn#"
+--   -- return text_hl .. "%s"
+--   -- return (vim.v.relnum == 0 and extend_to_signs) and colored_text .. "%s" or uncolored_text .. "%s"
 -- end
+
+local function marks()
+  -- Add a mark to current line
+  local buf = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
+
+  local markslist = vim.fn.getmarklist(buf)
+  -- vim.list_extend(markslist, vim.fn.getmarklist())
+  for _, mark in ipairs(markslist) do
+    -- if mark.pos[1] == buf and mark.mark:match("[a-zA-Z]") then
+    if mark.mark:match("[a-zA-Z]") and mark.pos[2] == vim.v.lnum then
+      return "%#MatchParen#" .. string.sub(mark.mark, 2, 2) .. "%*"
+      -- if mark.pos[2] == vim.v.lnum then
+      -- end
+      -- local lnum = mark.pos[2]
+      -- return mark.mark
+      -- signs[lnum] = signs[lnum] or {}
+      -- ---@diagnostic disable-next-line: undefined-field
+      -- table.insert(signs[lnum], { text = mark.mark:sub(2), texthl = "SnacksStatusColumnMark", type = "mark" })
+    end
+  end
+  return ""
+
+  -- return "*" --ile signs[vim.v.lnum]
+end
 
 local function folds()
   local win = vim.g.statusline_winid
@@ -140,6 +154,7 @@ local function folds()
 
   local level = foldinfo.level
 
+  ---@diagnostic disable-next-line: undefined-field
   local mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
 
   local is_visual_and_range = false
@@ -155,7 +170,7 @@ local function folds()
   local after_level = after_foldinfo.level
 
   if level == 0 then
-    return string .. (is_visual_and_range and "%#Visual" .. "# " or " "):rep(width) .. "%*"
+    return string .. (is_visual_and_range and "%#Visual# " or " "):rep(width)
   end
 
   local foldclosed = foldinfo.lines > 0
@@ -190,7 +205,7 @@ local function folds()
     string = string .. (" "):rep(width - range)
   end
 
-  return string .. "%*"
+  return string
 end
 
 function M.myStatusColumn()
@@ -202,12 +217,14 @@ function M.myStatusColumn()
   end
 
   text = table.concat({
-    -- "%s", -- symbols
-    sign(),
+    "%s%*", -- symbols
+    -- sign() .. "%*",
+    marks(),
     "%=", -- right align
     number(), -- numbers
-    " ", -- extra padding before..
-    folds(), -- maybe folds, and after that your code! (.. maybe)
+    -- "%l",
+    "%*", -- extra padding before, then end hl
+    folds() .. "%*", -- maybe folds, and after that your code! (.. maybe)
   })
 
   return text

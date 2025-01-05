@@ -59,6 +59,12 @@ local function get_virt_text()
   }
 end
 
+---@return boolean: Current window is part of disabled windows
+local function is_disabled_window_list()
+  local win = vim.api.nvim_get_current_win()
+  return M.options.disabled_list["win" .. win] ~= nil
+end
+
 ---@param filetype string: the filetype to check if it's disabled
 ---@return boolean: true if filetype was in list of disabled filetypes
 local function is_disabled_filetype(filetype)
@@ -77,7 +83,7 @@ end
 ---@param filetype string: the filetype to check if it's disabled
 ---@return boolean: true if filetype was in list of disabled filetypes or buftypes
 local function is_disabled(buftype, filetype)
-  return is_disabled_buftype(buftype) or is_disabled_filetype(filetype)
+  return is_disabled_buftype(buftype) or is_disabled_filetype(filetype) or is_disabled_window_list()
 end
 
 local function setup_ns_and_hlgroups()
@@ -105,6 +111,10 @@ local function setup_ns_and_hlgroups()
   local extend_to_signs = M.options.extend_to_signs or moody_column
   local extend_to_folds = M.options.extend_to_folds or moody_column
 
+  -- local extend_to_linenr = M.options.extend_to_linenr
+  -- local extend_to_signs = M.options.extend_to_signs
+  -- local extend_to_folds = M.options.extend_to_folds
+
   for _, mode in ipairs(M.modes) do
     M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
 
@@ -117,13 +127,13 @@ local function setup_ns_and_hlgroups()
     hl(M["ns_" .. mode], "CursorLineNr", {
       fg = mode_color_unblended,
       bold = M.options.bold_nr,
-      bg = "none",
+      bg = extend_to_linenr and mode_color_blended or "none",
     })
     hl(M["ns_" .. mode], "CursorLineSign", {
-      bg = "none",
+      bg = extend_to_signs and mode_color_blended or "none",
     })
     hl(M["ns_" .. mode], "CursorLineFold", {
-      bg = "none",
+      bg = extend_to_folds and mode_color_blended or "none",
     })
 
     -- I use this for my statusline mode indicator
@@ -217,6 +227,7 @@ end
 ---@field extend_to_signs boolean: textend to signcolumn
 ---@field extend_to_folds boolean: textend to foldcolumn
 ---@field moody_column MoodyColumn: settings for the statuscolumn folds
+---@field disabled_list table: list of window ids where Moody is disabled. Internally handled.
 M.options = {}
 
 ---@type Config
@@ -232,6 +243,7 @@ M.defaults = {
   ---@field select number: hex value for select mode color
   ---@field terminal number: hex value for terminal mode color
   ---@field terminal_n number: hex value for terminal normal mode color
+  ---@field disabled_list table: list of window ids where Moody is disabled. Internally handled.
   blends = {
     normal = 0.2,
     insert = 0.2,
@@ -283,6 +295,7 @@ M.defaults = {
     "terminal",
     "prompt",
   },
+  disabled_list = {},
   ---@type boolean
   bold_nr = true,
   ---@type boolean
@@ -308,13 +321,38 @@ M.defaults = {
   },
 }
 
+---@param win integer: The window to trigger Moody for
+function M.trigger(win)
+  win = win or vim.api.nvim_get_current_win()
+  M.options.disabled_list["win" .. win] = nil
+  ---@diagnostic disable-next-line: undefined-field
+  vim.api.nvim_win_set_hl_ns(win, M.ns_normal)
+end
+
+---@param win integer: The window to disable Moody for
+function M.reset(win)
+  win = win or vim.api.nvim_get_current_win()
+  if vim.api.nvim_win_is_valid(win) then
+    M.options.disabled_list["win" .. win] = win
+  end
+  vim.api.nvim_set_hl_ns(0)
+end
+
 --- switches the hl-namespace depending on the mode in event.
 --- only usefull for ModeChanged event, as it's used in
 --- ModeChanged autocommand inside this plugin.
----@param event any
-function M.trigger_mode(event)
-  local mode = string.match(event.match, ".*:([^:]+)")
-  local win = vim.api.nvim_get_current_win()
+---@param event? any
+---@param win? integer: window number to trigger for
+function M.trigger_mode(event, win)
+  event = nil
+  local mode = "n"
+  if event ~= nil then
+    mode = string.match(event.match, ".*:([^:]+)")
+  else
+    ---@diagnostic disable-next-line: undefined-field
+    mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
+  end
+  win = win or vim.api.nvim_get_current_win()
 
   utils.switch(mode, {
     ["n"] = function()
@@ -418,7 +456,9 @@ function M.__setup(options)
   })
 
   -- set highlight depending on mode changed
-  vim.api.nvim_create_autocmd({ "ModeChanged" }, {
+  vim.api.nvim_create_autocmd({
+    "ModeChanged",
+  }, {
     desc = "set highlights depending on mode",
     group = mode_group,
     callback = function(event)
@@ -437,7 +477,11 @@ function M.__setup(options)
   })
 
   -- only show cursorline in active window
-  vim.api.nvim_create_autocmd({ "VimEnter", "WinEnter", "BufWinEnter" }, {
+  vim.api.nvim_create_autocmd({
+    "VimEnter",
+    "WinEnter",
+    "BufWinEnter",
+  }, {
     group = mode_group,
     callback = function(_)
       if is_disabled(vim.bo.buftype, vim.bo.filetype) then
@@ -451,7 +495,10 @@ function M.__setup(options)
       })
     end,
   })
-  vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
+  vim.api.nvim_create_autocmd({
+    "WinLeave",
+    "BufLeave",
+  }, {
     group = mode_group,
     callback = function(_)
       if is_disabled(vim.bo.buftype, vim.bo.filetype) then
@@ -467,7 +514,9 @@ function M.__setup(options)
   })
 
   if M.options.recording.enabled then
-    vim.api.nvim_create_autocmd({ "RecordingEnter" }, {
+    vim.api.nvim_create_autocmd({
+      "RecordingEnter",
+    }, {
       group = rec_group,
       callback = function(event)
         if is_disabled(vim.bo.buftype, vim.bo.filetype) then
@@ -491,7 +540,9 @@ function M.__setup(options)
       end,
     })
 
-    vim.api.nvim_create_autocmd({ "RecordingLeave" }, {
+    vim.api.nvim_create_autocmd({
+      "RecordingLeave",
+    }, {
       group = rec_group,
       callback = function(event)
         if is_disabled(vim.bo.buftype, vim.bo.filetype) then
@@ -503,7 +554,9 @@ function M.__setup(options)
       end,
     })
 
-    vim.api.nvim_create_autocmd({ "CursorMoved" }, {
+    vim.api.nvim_create_autocmd({
+      "CursorMoved",
+    }, {
       group = rec_group,
       callback = function(event)
         if is_disabled(vim.bo.buftype, vim.bo.filetype) then
@@ -525,7 +578,9 @@ function M.__setup(options)
       end,
     })
 
-    vim.api.nvim_create_autocmd({ "WinLeave" }, {
+    vim.api.nvim_create_autocmd({
+      "WinLeave",
+    }, {
       group = rec_group,
       callback = function(event)
         if is_disabled(vim.bo.buftype, vim.bo.filetype) then
