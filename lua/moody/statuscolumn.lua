@@ -96,28 +96,34 @@ end
 --   -- return (vim.v.relnum == 0 and extend_to_signs) and colored_text .. "%s" or uncolored_text .. "%s"
 -- end
 
+---@diagnostic disable-next-line: unused-function
+local function get_marks()
+  local buf = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
+  local signs = {}
+  -- Add marks
+  local marks = vim.fn.getmarklist(buf)
+  vim.list_extend(marks, vim.fn.getmarklist())
+  for _, mark in ipairs(marks) do
+    if mark.pos[1] == buf and mark.mark:match("[a-zA-Z]") then
+      local lnum = mark.pos[2]
+      signs[lnum] = signs[lnum] or {}
+      table.insert(signs[lnum], { text = mark.mark:sub(2), texthl = "SnacksStatusColumnMark", type = "mark" })
+    end
+  end
+
+  return signs
+end
+
 local function marks()
-  -- Add a mark to current line
   local buf = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
 
   local markslist = vim.fn.getmarklist(buf)
-  -- vim.list_extend(markslist, vim.fn.getmarklist())
   for _, mark in ipairs(markslist) do
-    -- if mark.pos[1] == buf and mark.mark:match("[a-zA-Z]") then
-    if mark.mark:match("[a-zA-Z]") and mark.pos[2] == vim.v.lnum then
-      return "%#MatchParen#" .. string.sub(mark.mark, 2, 2) .. "%*"
-      -- if mark.pos[2] == vim.v.lnum then
-      -- end
-      -- local lnum = mark.pos[2]
-      -- return mark.mark
-      -- signs[lnum] = signs[lnum] or {}
-      -- ---@diagnostic disable-next-line: undefined-field
-      -- table.insert(signs[lnum], { text = mark.mark:sub(2), texthl = "SnacksStatusColumnMark", type = "mark" })
+    if mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z]") then
+      return "%#MoodyMark#" .. string.sub(mark.mark, 2, 2) .. "%*"
     end
   end
   return ""
-
-  -- return "*" --ile signs[vim.v.lnum]
 end
 
 local function folds()
