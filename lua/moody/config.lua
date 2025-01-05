@@ -121,6 +121,12 @@ local function setup_ns_and_hlgroups()
     local mode_color_unblended = M.options.hl_unblended[mode]
     local mode_color_blended = M.options.hl_blended[mode]
 
+    hl(M["ns_" .. mode], "MoodyMark", {
+      fg = "#30FF91",
+      bg = "none",
+      bold = true,
+    })
+
     hl(M["ns_" .. mode], "CursorLine", { bg = default_cursorline and cursorline_default_bg or mode_color_blended })
     hl(M["ns_" .. mode], "CursorLineInverse", { fg = mode_color_blended })
 
