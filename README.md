@@ -182,6 +182,25 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
     },
 }
 ```
+## 🧾 API
+
+### Trigger Moody manually
+- You can trigger Moody for a certain window with
+```lua
+---@param win integer: The window to trigger Moody for
+require("moody").trigger(win)
+```
+- This will enable Moody for the provided window.
+    If the window id `integer` is part of a list of disabled windows, it will be removed from there. More on that below.
+
+### Disable Moody manually
+- Apart from providing *filetype* and/or *buftype* to disable Moody for, you can also manually disable Moody for specific windows
+```lua
+---@param win integer: The window to disable Moody for
+require("moody").reset(win)
+```
+- This will effectively disable Moody by adding the window id `integer` into a list of disabled windows.
+    If an invalid value is provided, Moody will only briefly get disabled until another ModeChanged is detected. If no value is provided, current window will be used.
 
 ## 🤯 Issues
 
