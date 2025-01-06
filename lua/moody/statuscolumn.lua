@@ -7,6 +7,13 @@ local error = ffi.new("Error")
 local M = {}
 -- options for extending cursorline to linenumbers and also using moody's statuscolumn
 
+local linenr_to_code_separator = require("moody.config").options.moody_column.separator.char
+
+---@return boolean: to disable or not to disable. That is the question.
+local function is_disabled(...)
+  return require("moody.config").is_disabled(...)
+end
+
 local function char_on_pos(pos)
   pos = pos or vim.fn.getpos(".")
   ---@diagnostic disable-next-line: undefined-global, undefined-field
@@ -67,13 +74,12 @@ local function get_visual_range()
   return range
 end
 
-local function number()
-  local uncolored_text = "%#LineNr#"
-  local colored_text = "%#CursorLineNr#"
-  --
-  -- if not extend_to_linenr then
-  --   return uncolored_text .. pad_start(vim.v.relnum)
-  -- end
+local function separator()
+  local colored_separator = "%#MoodySeparatorMode#" .. linenr_to_code_separator .. "%*"
+  local uncolored_separator = "%#MoodySeparator#" .. linenr_to_code_separator .. "%*"
+  -- local uncolored_separator = "%#MoodySeparator#" .. linenr_to_code_separator .. "%*"
+  -- local colored_separator = "%$" .. linenr_to_code_separator .. "%*"
+  -- local uncolored_separator = "%$" .. linenr_to_code_separator .. "%*"
 
   ---@diagnostic disable-next-line: undefined-field
   local mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
@@ -81,10 +87,34 @@ local function number()
   if mode == "v" then
     local v_range = get_visual_range()
     local is_in_range = vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
-    return is_in_range and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum)
+    return is_in_range and colored_separator or uncolored_separator
   end
 
-  return vim.v.relnum == 0 and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum)
+  return vim.v.relnum == 0 and colored_separator or uncolored_separator
+end
+
+local function number()
+  local uncolored_text = "%#LineNr#"
+  local colored_text = "%#CursorLineNr#"
+  --
+  -- if not extend_to_linenr then
+  --   return uncolored_text .. pad_start(vim.v.relnum)
+  -- end
+  -- local uncoored_separator = "%#MoodySeparator#" .. linenr_to_code_separator .. "%*"
+  -- local colored_separator = " "
+
+  ---@diagnostic disable-next-line: undefined-field
+  local mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
+
+  if mode == "v" then
+    local v_range = get_visual_range()
+    local is_in_range = vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
+    -- return is_in_range and colored_text .. pad_start(vim.v.lnum) .. colored_separator
+    --   or uncolored_text .. pad_start(vim.v.relnum) .. uncoored_separator
+    return (is_in_range and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum))
+  end
+
+  return (vim.v.relnum == 0 and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum))
 end
 
 -- local function sign()
@@ -152,7 +182,7 @@ local function folds()
 
   -- if no width for foldcolumn, theres nothing to show
   if width == 0 then
-    return ""
+    return "%*"
   end
 
   local foldinfo = C.fold_info(args.wp, args.lnum)
@@ -176,7 +206,7 @@ local function folds()
   local after_level = after_foldinfo.level
 
   if level == 0 then
-    return string .. (is_visual_and_range and "%#Visual# " or " "):rep(width)
+    return string .. (is_visual_and_range and "%#Visual# " or " "):rep(width) .. "%*"
   end
 
   local foldclosed = foldinfo.lines > 0
@@ -217,6 +247,10 @@ end
 function M.myStatusColumn()
   local text = ""
 
+  if is_disabled(vim.bo.buftype, vim.bo.filetype) then
+    return text
+  end
+
   local win = vim.g.statusline_winid
   if vim.api.nvim_get_current_win() ~= win then
     return text
@@ -228,9 +262,8 @@ function M.myStatusColumn()
     marks(),
     "%=", -- right align
     number(), -- numbers
-    -- "%l",
-    "%*", -- extra padding before, then end hl
-    folds() .. "%*", -- maybe folds, and after that your code! (.. maybe)
+    folds(),
+    separator(),
   })
 
   return text
