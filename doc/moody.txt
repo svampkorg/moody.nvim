@@ -49,7 +49,11 @@ moody.setup({options})                                         *moody.setup()*
         enabled = false,
         extend_to = false,
         folds_end_color = "#2F2F2F",
-        folds_start_color = "#C1C1C1"
+        folds_start_color = "#C1C1C1",
+        separator = {
+          char = "",
+          color = "#2F334D"
+        }
       },
       recording = {
         enabled = false,
@@ -97,6 +101,14 @@ Config                                                                *Config*
         {blends} (Blends)  how much to blend colors with black for the
                            cursorline
         {colors} (Colors)  table of colours with respective mode
+
+
+M.is_disabled()                                              *M.is_disabled()*
+
+
+    Return: ~
+        boolean: true if filetype was in list of disabled filetypes or
+        buftypes
 
 
 
