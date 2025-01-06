@@ -148,6 +148,7 @@ local function marks()
   local buf = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
 
   local markslist = vim.fn.getmarklist(buf)
+  vim.list_extend(markslist, vim.fn.getmarklist())
   for _, mark in ipairs(markslist) do
     if mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z]") then
       return "%#MoodyMark#" .. string.sub(mark.mark, 2, 2) .. "%*"
@@ -262,8 +263,8 @@ function M.myStatusColumn()
     marks(),
     "%=", -- right align
     number(), -- numbers
-    folds(),
     separator(),
+    folds(),
   })
 
   return text

@@ -298,7 +298,7 @@ M.defaults = {
   },
   ---@class MoodyColumnSeparator
   ---@field char string: A character to use as separator. Defaults to empty.
-  ---@field color string: A hexadecimal value to use for the foreground of separator. Defaults to bg of CursorLine
+  ---@field color string?: A hexadecimal value to use for the foreground of separator. Defaults to bg of CursorLine
 
   ---@class MoodyColumn
   ---@field enabled boolean: use moody column
@@ -313,7 +313,7 @@ M.defaults = {
     folds_end_color = "#2F2F2F",
     separator = {
       char = "",
-      color = "#2F334D",
+      color = nil,
     },
   },
   ---@type table<string>

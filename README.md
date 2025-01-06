@@ -106,12 +106,21 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
         -- way of visualising folds. There's also the addition of a better view of visually
         -- selected lines.
 		moody_column = {
-			enabled = true,
-            linenr_to_code_separator = "",
+            -- Set to true to enable Moody column
+			enabled = false,
             -- these are two colors you can specifiy which will be used to generate a gradient
             -- with one step for each fold level, specified by vim.o.foldnestmax
 			folds_start_color = tokyonight_moon.fg,
 			folds_end_color = tokyonight_moon.bg_highlight,
+            separator = {
+            -- Additionally you can provide a separator char between moody column and
+            -- your editor area. Personally I just go with a space here, to create some distance
+            -- between the line numbers and the folds.
+            char = "▕",
+            -- The default color of the separator will be whatever your theme normally
+            -- use for the CursorColumn. Or you can set your own color here.
+            color = "#2F334D",
+            },
 		},
     },
   }
