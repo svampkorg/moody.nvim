@@ -94,27 +94,25 @@ I made this plugin so I could see which mode Neovim is in just by the color of C
             -- using right padding.
             right_padding = 2,
         },
-        -- extend the cursorline to cover line numbers. 
-        extend_to_linenr = true,
-        -- extend_to_linenr_visual enables moodys built in statuscolumn to cover linenr in
-        -- visual selection to show the visual range of the selection highlighted by 
-        -- Visual hl group.
-        extend_to_linenr_visual = false,
-        -- setting reduce_cursorline to true will reduce the moodys cursorline to.. nothing! 
-        -- It will make the cursorline have the default value of whatever cursorline has in the
-        -- default "hightlight namespace", 0. TLDR: no moody change in cursorline with ModeChanged.
-        reduce_cursorline = false,
-        -- fold_options.enabled also enables the built in SignColumn in moody. These folds takes a bit of a different
-        -- approach to showing folds and their range. Try it out and see if you like it :) If not you can use
-        -- the SignColumn as is, with extend_to_linenr. It will then only show diagnostic signs and linenr.
-        -- This requires nvim-ufo, and will possibly break your current custom SignColumn (if you have any)
-        fold_options = {
-            enabled = false,
+        -- Set *default_cursorline* to true if you want to have just the linenr highlighted with normal CursorLine
+		default_cursorline = false,
+        -- Set *extend_to_linenr* to true to extend the CursorLine into line numbers
+		extend_to_linenr = true,
+        -- Set *extend_to_signs* to true to extend the CursorLine into signs
+		extend_to_signs = true,
+        -- Set *extend_to_folds* to true to extend the CursorLine into folds
+		extend_to_folds = true,
+        -- Moody has it's own statuscolumn implementatin. With it, you can have a different
+        -- way of visualising folds. There's also the addition of a better view of visually
+        -- selected lines.
+		moody_column = {
+			enabled = true,
+            linenr_to_code_separator = "",
             -- these are two colors you can specifiy which will be used to generate a gradient
             -- with one step for each fold level, specified by vim.o.foldnestmax
-            start_color = "#C1C1C1",
-            end_color = "#2F2F2F",
-        },
+			folds_start_color = tokyonight_moon.fg,
+			folds_end_color = tokyonight_moon.bg_highlight,
+		},
     },
   }
 ```

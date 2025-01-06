@@ -82,7 +82,7 @@ end
 ---@param buftype string: the filetype to check if it's disabled
 ---@param filetype string: the filetype to check if it's disabled
 ---@return boolean: true if filetype was in list of disabled filetypes or buftypes
-local function is_disabled(buftype, filetype)
+function M.is_disabled(buftype, filetype)
   return is_disabled_buftype(buftype) or is_disabled_filetype(filetype) or is_disabled_window_list()
 end
 
@@ -107,9 +107,9 @@ local function setup_ns_and_hlgroups()
 
   local moody_column = M.options.moody_column
   local default_cursorline = M.options.default_cursorline
-  local extend_to_linenr = M.options.extend_to_linenr or moody_column
-  local extend_to_signs = M.options.extend_to_signs or moody_column
-  local extend_to_folds = M.options.extend_to_folds or moody_column
+  local extend_to_linenr = M.options.extend_to_linenr or moody_column.enabled
+  local extend_to_signs = M.options.extend_to_signs or moody_column.enabled
+  local extend_to_folds = M.options.extend_to_folds or moody_column.enabled
 
   -- local extend_to_linenr = M.options.extend_to_linenr
   -- local extend_to_signs = M.options.extend_to_signs
@@ -125,6 +125,20 @@ local function setup_ns_and_hlgroups()
       fg = "#ff007c",
       bg = "none",
       -- bold = true,
+    })
+
+    hl(M["ns_" .. mode], "MoodySeparator", {
+      fg = moody_column.separator.color or cursorline_default_bg,
+      bg = "none",
+    })
+
+    hl(M["ns_" .. mode], "MoodySeparatorMode", {
+      fg = moody_column.separator.color or cursorline_default_bg,
+      bg = mode_color_blended,
+    })
+
+    hl(M["ns_" .. mode], "MoodySign", {
+      bg = mode_color_blended,
     })
 
     hl(M["ns_" .. mode], "CursorLine", { bg = default_cursorline and cursorline_default_bg or mode_color_blended })
@@ -282,16 +296,25 @@ M.defaults = {
     terminal = "#4CD4BD",
     terminal_n = "#00BBCC",
   },
+  ---@class MoodyColumnSeparator
+  ---@field char string: A character to use as separator. Defaults to empty.
+  ---@field color string: A hexadecimal value to use for the foreground of separator. Defaults to bg of CursorLine
+
   ---@class MoodyColumn
   ---@field enabled boolean: use moody column
   ---@field extend_to boolean: extend moody to moody column
   ---@field folds_start_color string: hex format start color for fold levels
   ---@field folds_end_color string: hex format end color for fold levels
+  ---@field separator MoodyColumnSeparator: some settings for the separator between moody_column and code
   moody_column = {
     enabled = false,
     extend_to = false,
     folds_start_color = "#C1C1C1",
     folds_end_color = "#2F2F2F",
+    separator = {
+      char = "",
+      color = "#2F334D",
+    },
   },
   ---@type table<string>
   disabled_filetypes = {},
@@ -451,7 +474,7 @@ function M.__setup(options)
   }, {
     group = mode_group,
     callback = function()
-      if is_disabled(vim.bo.buftype, vim.bo.filetype) then
+      if M.is_disabled(vim.bo.buftype, vim.bo.filetype) then
         vim.api.nvim_set_hl_ns(0)
         return
       end
@@ -468,7 +491,7 @@ function M.__setup(options)
     desc = "set highlights depending on mode",
     group = mode_group,
     callback = function(event)
-      if is_disabled(vim.bo.buftype, vim.bo.filetype) then
+      if M.is_disabled(vim.bo.buftype, vim.bo.filetype) then
         vim.api.nvim_set_hl_ns(0)
         return
       end
@@ -490,7 +513,7 @@ function M.__setup(options)
   }, {
     group = mode_group,
     callback = function(_)
-      if is_disabled(vim.bo.buftype, vim.bo.filetype) then
+      if M.is_disabled(vim.bo.buftype, vim.bo.filetype) then
         vim.api.nvim_set_hl_ns(0)
         return
       end
@@ -507,7 +530,7 @@ function M.__setup(options)
   }, {
     group = mode_group,
     callback = function(_)
-      if is_disabled(vim.bo.buftype, vim.bo.filetype) then
+      if M.is_disabled(vim.bo.buftype, vim.bo.filetype) then
         vim.api.nvim_set_hl_ns(0)
         return
       end
@@ -525,7 +548,7 @@ function M.__setup(options)
     }, {
       group = rec_group,
       callback = function(event)
-        if is_disabled(vim.bo.buftype, vim.bo.filetype) then
+        if M.is_disabled(vim.bo.buftype, vim.bo.filetype) then
           vim.api.nvim_set_hl_ns(0)
           return
         end
@@ -551,7 +574,7 @@ function M.__setup(options)
     }, {
       group = rec_group,
       callback = function(event)
-        if is_disabled(vim.bo.buftype, vim.bo.filetype) then
+        if M.is_disabled(vim.bo.buftype, vim.bo.filetype) then
           vim.api.nvim_set_hl_ns(0)
           return
         end
@@ -565,7 +588,7 @@ function M.__setup(options)
     }, {
       group = rec_group,
       callback = function(event)
-        if is_disabled(vim.bo.buftype, vim.bo.filetype) then
+        if M.is_disabled(vim.bo.buftype, vim.bo.filetype) then
           vim.api.nvim_set_hl_ns(0)
           return
         end
@@ -589,7 +612,7 @@ function M.__setup(options)
     }, {
       group = rec_group,
       callback = function(event)
-        if is_disabled(vim.bo.buftype, vim.bo.filetype) then
+        if M.is_disabled(vim.bo.buftype, vim.bo.filetype) then
           vim.api.nvim_set_hl_ns(0)
           return
         end
