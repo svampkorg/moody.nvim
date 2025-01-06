@@ -51,8 +51,7 @@ moody.setup({options})                                         *moody.setup()*
         folds_end_color = "#2F2F2F",
         folds_start_color = "#C1C1C1",
         separator = {
-          char = "",
-          color = "#2F334D"
+          char = ""
         }
       },
       recording = {
