@@ -167,13 +167,13 @@ local function marks()
 
   table.insert(
     return_table,
-    (is_in_cursorline() or is_in_visual_range()) and "%#MoodyOtherMarkMode#" .. other_marks_return_string
-      or "%#MoodyOtherMark#" .. other_marks_return_string
+    (is_in_cursorline() or is_in_visual_range()) and "%#MoodyAlphabeticMarkMode#" .. alphabetic_marks_return_string
+      or "%#MoodyAlphabeticMark#" .. alphabetic_marks_return_string
   )
   table.insert(
     return_table,
-    (is_in_cursorline() or is_in_visual_range()) and "%#MoodyAlphabeticMarkMode#" .. alphabetic_marks_return_string
-      or "%#MoodyAlphabeticMark#" .. alphabetic_marks_return_string
+    (is_in_cursorline() or is_in_visual_range()) and "%#MoodyOtherMarkMode#" .. other_marks_return_string
+      or "%#MoodyOtherMark#" .. other_marks_return_string
   )
 
   return table.concat(return_table)
