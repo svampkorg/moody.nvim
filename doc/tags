@@ -1,6 +1,7 @@
 Config	moody.txt	/*Config*
 ConfigModule	moody.txt	/*ConfigModule*
 M.int_to_hex_string()	moody.txt	/*M.int_to_hex_string()*
+M.is_disabled()	moody.txt	/*M.is_disabled()*
 MathModule	moody.txt	/*MathModule*
 Moody	moody.txt	/*Moody*
 moody	moody.txt	/*moody*
