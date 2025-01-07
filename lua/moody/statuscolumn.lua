@@ -9,13 +9,15 @@ local M = {}
 
 local linenr_to_code_separator = require("moody.config").options.moody_column.separator.char
 
+local config = require("moody.config").options
+
 ---@return boolean: to disable or not to disable. That is the question.
 local function is_disabled(...)
   return require("moody.config").is_disabled(...)
 end
 
-local markslist = {}
-local marks_timestamp = 0
+M.markslist = {}
+M.marks_timestamp = 0
 
 local function char_on_pos(pos)
   pos = pos or vim.fn.getpos(".")
@@ -35,7 +37,7 @@ local function pad_start(n)
 end
 
 -- borrowed from https://github.com/Wansmer/nvim-config/blob/main/lua/utils.lua#L83
--- From: https://neovim.discourse.group/t/how-do-you-work-with-strings-with-multibyte-characters-in-lua/2437/4
+-- From: https://neovim.discourse.group/t/how-do-you-work-with-return_strings-with-multibyte-characters-in-lua/2437/4
 local function char_byte_count(s, i)
   if not s or s == "" then
     return 1
@@ -78,10 +80,9 @@ local function get_visual_range()
 end
 
 local function is_in_visual_range()
-  ---@diagnostic disable-next-line: undefined-field
-  local mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
+  local mode = vim.api.nvim_get_mode().mode
 
-  if mode == "v" then
+  if mode == "v" or mode == "V" then
     local v_range = get_visual_range()
     return vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
   end
@@ -93,8 +94,8 @@ local function is_in_cursorline()
 end
 
 local function separator()
-  local colored_separator = "%#MoodySeparatorMode#" .. linenr_to_code_separator .. "%*"
-  local uncolored_separator = "%#MoodySeparator#" .. linenr_to_code_separator .. "%*"
+  local colored_separator = "%#MoodySeparatorMode#" .. linenr_to_code_separator
+  local uncolored_separator = "%#MoodySeparator#" .. linenr_to_code_separator
 
   return (is_in_cursorline() or is_in_visual_range()) and colored_separator or uncolored_separator
 end
@@ -107,50 +108,74 @@ local function number()
 end
 
 local function sign()
-  return (is_in_cursorline() or is_in_visual_range()) and "%#MoodySignColumn#%s%*" or "%#SignColumn#%s%*"
+  return (is_in_cursorline() or is_in_visual_range()) and "%#MoodySignColumn#%s" or "%#SignColumn#%s"
 end
 
----@diagnostic disable-next-line: unused-function
-local function get_marks()
-  local buf = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
-  local signs = {}
-  -- Add marks
-  local marks = vim.fn.getmarklist(buf)
-  vim.list_extend(marks, vim.fn.getmarklist())
-  for _, mark in ipairs(marks) do
-    if mark.pos[1] == buf and mark.mark:match("[a-zA-Z]") then
-      local lnum = mark.pos[2]
-      signs[lnum] = signs[lnum] or {}
-      table.insert(signs[lnum], { text = mark.mark:sub(2), texthl = "SnacksStatusColumnMark", type = "mark" })
-    end
-  end
-
-  return signs
-end
+-- ---@diagnostic disable-next-line: unused-function
+-- local function get_marks()
+--   local buf = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
+--   local signs = {}
+--   -- Add marks
+--   local marks = vim.fn.getmarklist(buf)
+--   vim.list_extend(marks, vim.fn.getmarklist())
+--   for _, mark in ipairs(marks) do
+--     if mark.pos[1] == buf and mark.mark:match("[a-zA-Z]") then
+--       local lnum = mark.pos[2]
+--       signs[lnum] = signs[lnum] or {}
+--       table.insert(signs[lnum], { text = mark.mark:sub(2), texthl = "SnacksStatusColumnMark", type = "mark" })
+--     end
+--   end
+--   return signs
+-- end
 
 -- Throttles mark updates
 local function update_marks_list()
   local current_timestamp = vim.fn.localtime()
-  if current_timestamp - 1 > marks_timestamp then
-    markslist = vim.fn.getmarklist(vim.api.nvim_win_get_buf(vim.g.statusline_winid))
-    -- vim.list_extend(markslist, vim.fn.getmarklist())
-    marks_timestamp = current_timestamp
+  if current_timestamp - 1 < M.marks_timestamp then
+    return
   end
+  M.markslist = vim.fn.getmarklist(vim.api.nvim_win_get_buf(vim.g.statusline_winid))
+  vim.list_extend(M.markslist, vim.fn.getmarklist())
+  -- print(vim.inspect(M.markslist))
+  M.marks_timestamp = current_timestamp
 end
 
 local function marks()
+  if not config.moody_column.alphabetic_marks and not config.moody_column.other_marks then
+    return ""
+  end
   update_marks_list()
 
   -- vim.list_extend(markslist_local, vim.fn.getmarklist())
-  for _, mark in ipairs(markslist) do
-    if mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z]") then
-      local mark_char = string.sub(mark.mark, 2, 2)
-      -- return "%#MoodyMark#" .. mark_char .. "%*"
-      return (is_in_cursorline() or is_in_visual_range()) and "%#MoodyMarkMode#" .. mark_char .. "%*"
-        or "%#MoodyMark#" .. mark_char .. "%*"
+  local alphabetic_mark_chars = {}
+  local other_mark_chars = {}
+  for _, mark in ipairs(M.markslist) do
+    if config.moody_column.alphabetic_marks and mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z0-9_]") then
+      table.insert(alphabetic_mark_chars, string.sub(mark.mark, 2, 2)) -- mark_chars = return_string.sub(mark.mark, 2, 2)
+    elseif config.moody_column.other_marks and mark.pos[2] == vim.v.lnum then
+      table.insert(other_mark_chars, string.sub(mark.mark, 2, 2)) -- mark_chars = return_string.sub(mark.mark, 2, 2)
     end
+    -- if mark.pos[2] == vim.v.lnum then
+    -- mark_chars = return_string.sub(mark.mark, 2, 2)
+    --   -- return "%#MoodyAlphabeticMark#" .. mark_char .. "%*"
+    --   -- return (is_in_cursorline() or is_in_visual_range()) and "%#MoodyAlphabeticMarkMode#" .. table.concat(mark_chars) .. "%*"
+    --   --   or "%#MoodyAlphabeticMark#" .. mark_char .. "%*"
+    -- end
   end
-  return (is_in_cursorline() or is_in_visual_range()) and "%#MoodyMarkMode#" or "%#MoodyMark#"
+  local alphabetic_marks_return_string = table.concat(alphabetic_mark_chars)
+  local other_marks_return_string = table.concat(other_mark_chars)
+  local return_table = {}
+  table.insert(
+    return_table,
+    (is_in_cursorline() or is_in_visual_range()) and "%#MoodyOtherMarkMode#" .. other_marks_return_string
+      or "%#MoodyOtherMark#" .. other_marks_return_string
+  )
+  table.insert(
+    return_table,
+    (is_in_cursorline() or is_in_visual_range()) and "%#MoodyAlphabeticMarkMode#" .. alphabetic_marks_return_string
+      or "%#MoodyAlphabeticMark#" .. alphabetic_marks_return_string
+  )
+  return table.concat(return_table)
 end
 
 local function folds()
@@ -187,24 +212,18 @@ local function folds()
 
   local level = foldinfo.level
 
-  ---@diagnostic disable-next-line: undefined-field
-  local mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
+  local is_visual_and_range = is_in_visual_range()
 
-  local is_visual_and_range = false
-  if mode == "v" then
-    local v_range = get_visual_range()
-    is_visual_and_range = vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
-  end
-
-  local string = is_curline and "%#CursorLineFoldLevel_" .. level .. "#"
+  local fold_hl_string = is_curline and "%#CursorLineFoldLevel_" .. level .. "#"
     or is_visual_and_range and "%#FoldLevelVisual_" .. level .. "#"
     or ("%#FoldLevel_" .. level .. "#")
     or "%#FoldColumn#"
-  local after_level = after_foldinfo.level
 
   if level == 0 then
-    return string .. (is_visual_and_range and "%#Visual# " or " "):rep(width) .. "%*"
+    return fold_hl_string .. (is_visual_and_range and "%#Visual# " or " "):rep(width) .. "%*"
   end
+
+  local after_level = after_foldinfo.level
 
   local foldclosed = foldinfo.lines > 0
   local first_level = level - width - (foldclosed and 1 or 0) + 1
@@ -223,22 +242,22 @@ local function folds()
   for col = 1, range do
     local is_after_open = after_foldinfo.start == args.lnum + 1 and after_first_level + col > after_foldinfo.llevel
     if args.virtnum ~= 0 then
-      string = string .. args.fold.sep
+      fold_hl_string = fold_hl_string .. args.fold.sep
     elseif foldclosed and (col == level or col == width) then
-      string = string .. args.fold.close
+      fold_hl_string = fold_hl_string .. args.fold.close
     elseif foldinfo.start == args.lnum and first_level + col > foldinfo.llevel then
-      string = string .. args.fold.open
+      fold_hl_string = fold_hl_string .. args.fold.open
     elseif (level > after_level or is_after_open or after_foldclosed) and not should_be_sep then
-      string = string .. args.fold.eofold
+      fold_hl_string = fold_hl_string .. args.fold.eofold
     else
-      string = string .. args.fold.sep
+      fold_hl_string = fold_hl_string .. args.fold.sep
     end
   end
   if range < width then
-    string = string .. (" "):rep(width - range)
+    fold_hl_string = fold_hl_string .. (" "):rep(width - range)
   end
 
-  return string
+  return fold_hl_string
 end
 
 function M.myStatusColumn()

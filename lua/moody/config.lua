@@ -121,22 +121,53 @@ local function setup_ns_and_hlgroups()
     local mode_color_unblended = M.options.hl_unblended[mode]
     local mode_color_blended = M.options.hl_blended[mode]
 
-    hl(M["ns_" .. mode], "MoodyMark", {
+    hl(M["ns_" .. mode], "MoodyAlphabeticMark", {
       fg = "#ff007c",
       bg = "none",
       -- bold = true,
     })
-
-    hl(M["ns_" .. mode], "MoodyMarkMode", {
+    hl(M["ns_" .. mode], "MoodyAlphabeticMarkMode", {
       fg = "#ff007c",
       bg = mode_color_blended,
     })
-
+    hl(M["ns_" .. mode], "MoodyOtherMark", {
+      fg = "#48ff32",
+      bg = "none",
+      -- bold = true,
+    })
+    hl(M["ns_" .. mode], "MoodyOtherMarkMode", {
+      fg = "#48ff32",
+      bg = mode_color_blended,
+      -- bold = true,
+    })
+    -- "#30FF91"
     -- hl(M["ns_" .. mode], "MoodyColumn", {
     --   bg = "none",
     -- })
 
     hl(M["ns_" .. mode], "MoodySignColumn", {
+      bg = mode_color_blended,
+    })
+
+    -- hl(M["ns_" .. mode], "MiniDiffSignAddMoody", {
+    --   bg = mode_color_blended,
+    -- })
+    -- hl(M["ns_" .. mode], "MiniDiffSignChangeMoody", {
+    --   bg = mode_color_blended,
+    -- })
+    -- hl(M["ns_" .. mode], "MiniDiffSingDeleteMoody", {
+    --   bg = mode_color_blended,
+    -- })
+    hl(M["ns_" .. mode], "MoodyAdded", {
+      link = "Added",
+      bg = mode_color_blended,
+    })
+    hl(M["ns_" .. mode], "MoodyChanged", {
+      link = "Changed",
+      bg = mode_color_blended,
+    })
+    hl(M["ns_" .. mode], "MoodyRemoved", {
+      link = "Removed",
       bg = mode_color_blended,
     })
 
@@ -327,15 +358,18 @@ M.defaults = {
   ---@field folds_start_color string: hex format start color for fold levels
   ---@field folds_end_color string: hex format end color for fold levels
   ---@field separator MoodyColumnSeparator: some settings for the separator between moody_column and code
+  ---@field alphabetic_marks boolean: Show alphabetic marks in the Column
+  ---@field other_marks boolean: Show other non-alphabetic marks in the Column
   moody_column = {
     enabled = false,
-    extend_to = false,
     folds_start_color = "#C1C1C1",
     folds_end_color = "#2F2F2F",
     separator = {
       char = "",
       color = nil,
     },
+    alphabetic_marks = true,
+    other_marks = true,
   },
   ---@type table<string>
   disabled_filetypes = {},
@@ -400,7 +434,7 @@ function M.trigger_mode(event, win)
     mode = string.match(event.match, ".*:([^:]+)")
   else
     ---@diagnostic disable-next-line: undefined-field
-    mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
+    mode = vim.api.nvim_get_mode().mode
   end
   win = win or vim.api.nvim_get_current_win()
 
