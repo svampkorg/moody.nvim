@@ -46,10 +46,11 @@ moody.setup({options})                                         *moody.setup()*
       extend_to_linenr = false,
       extend_to_signs = false,
       moody_column = {
+        alphabetic_marks = true,
         enabled = false,
-        extend_to = false,
         folds_end_color = "#2F2F2F",
         folds_start_color = "#C1C1C1",
+        other_marks = true,
         separator = {
           char = ""
         }
