@@ -140,12 +140,11 @@ local function setup_ns_and_hlgroups()
       bg = mode_color_blended,
       -- bold = true,
     })
-    -- "#30FF91"
-    -- hl(M["ns_" .. mode], "MoodyColumn", {
-    --   bg = "none",
-    -- })
 
     hl(M["ns_" .. mode], "MoodySignColumn", {
+      bg = "none",
+    })
+    hl(M["ns_" .. mode], "MoodySignColumnMode", {
       bg = mode_color_blended,
     })
 

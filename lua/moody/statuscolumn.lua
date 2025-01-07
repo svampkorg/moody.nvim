@@ -108,7 +108,7 @@ local function number()
 end
 
 local function sign()
-  return (is_in_cursorline() or is_in_visual_range()) and "%#MoodySignColumn#%s" or "%#SignColumn#%s"
+  return (is_in_cursorline() or is_in_visual_range()) and "%#MoodySignColumnMode#%s" or "%#MoodySignColumn#%s"
 end
 
 -- ---@diagnostic disable-next-line: unused-function
@@ -144,20 +144,24 @@ local function marks()
   end
   update_marks_list()
 
-  -- TODO: Only save the last added mark
+  local marks_table = {
+    alphabetic = {},
+    other = {},
+  }
 
-  local alphabetic_mark_chars = {}
-  local other_mark_chars = {}
+  local added_othermark = false
+
   for _, mark in ipairs(M.markslist) do
     if config.moody_column.alphabetic_marks and mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z]") then
-      table.insert(alphabetic_mark_chars, string.sub(mark.mark, 2, 2))
-    elseif config.moody_column.other_marks and mark.pos[2] == vim.v.lnum then
-      table.insert(other_mark_chars, string.sub(mark.mark, 2, 2))
+      table.insert(marks_table.alphabetic, string.sub(mark.mark, 2, 2))
+    elseif config.moody_column.other_marks and mark.pos[2] == vim.v.lnum and not added_othermark then
+      table.insert(marks_table.other, string.sub(mark.mark, 2, 2))
     end
   end
 
-  local alphabetic_marks_return_string = table.concat(alphabetic_mark_chars)
-  local other_marks_return_string = table.concat(other_mark_chars)
+  local alphabetic_marks_return_string =
+    table.concat(marks_table.alphabetic, nil, nil, math.min(3, #marks_table.alphabetic))
+  local other_marks_return_string = table.concat(marks_table.other, nil, nil, math.min(3, #marks_table.other))
 
   local return_table = {}
 
