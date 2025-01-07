@@ -144,14 +144,15 @@ local function marks()
   end
   update_marks_list()
 
-  -- vim.list_extend(markslist_local, vim.fn.getmarklist())
+  -- TODO: Only save the last added mark
+
   local alphabetic_mark_chars = {}
   local other_mark_chars = {}
   for _, mark in ipairs(M.markslist) do
     if config.moody_column.alphabetic_marks and mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z]") then
-      table.insert(alphabetic_mark_chars, string.sub(mark.mark, 2, 2)) -- mark_chars = return_string.sub(mark.mark, 2, 2)
+      table.insert(alphabetic_mark_chars, string.sub(mark.mark, 2, 2))
     elseif config.moody_column.other_marks and mark.pos[2] == vim.v.lnum then
-      table.insert(other_mark_chars, string.sub(mark.mark, 2, 2)) -- mark_chars = return_string.sub(mark.mark, 2, 2)
+      table.insert(other_mark_chars, string.sub(mark.mark, 2, 2))
     end
   end
 
