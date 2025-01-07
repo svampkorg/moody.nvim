@@ -127,6 +127,27 @@ local function setup_ns_and_hlgroups()
       -- bold = true,
     })
 
+    hl(M["ns_" .. mode], "MoodyMarkMode", {
+      fg = "#ff007c",
+      bg = mode_color_blended,
+    })
+
+    -- hl(M["ns_" .. mode], "MoodyColumn", {
+    --   bg = "none",
+    -- })
+
+    hl(M["ns_" .. mode], "MoodySignColumn", {
+      bg = mode_color_blended,
+    })
+
+    -- hl(M["ns_" .. mode], "MoodyColumnInVisual", {
+    --   bg = M.options.hl_blended["visual"],
+    -- })
+
+    -- hl(M["ns_" .. mode], "SignVisual", {
+    --   bg = M.options.hl_blended["visual"],
+    -- })
+
     hl(M["ns_" .. mode], "MoodySeparator", {
       fg = moody_column.separator.color or cursorline_default_bg,
       bg = "none",
