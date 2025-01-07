@@ -135,8 +135,6 @@ local function update_marks_list()
     return
   end
   M.markslist = vim.fn.getmarklist(vim.api.nvim_win_get_buf(vim.g.statusline_winid))
-  vim.list_extend(M.markslist, vim.fn.getmarklist())
-  -- print(vim.inspect(M.markslist))
   M.marks_timestamp = current_timestamp
 end
 
@@ -150,21 +148,18 @@ local function marks()
   local alphabetic_mark_chars = {}
   local other_mark_chars = {}
   for _, mark in ipairs(M.markslist) do
-    if config.moody_column.alphabetic_marks and mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z0-9_]") then
+    if config.moody_column.alphabetic_marks and mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z]") then
       table.insert(alphabetic_mark_chars, string.sub(mark.mark, 2, 2)) -- mark_chars = return_string.sub(mark.mark, 2, 2)
     elseif config.moody_column.other_marks and mark.pos[2] == vim.v.lnum then
       table.insert(other_mark_chars, string.sub(mark.mark, 2, 2)) -- mark_chars = return_string.sub(mark.mark, 2, 2)
     end
-    -- if mark.pos[2] == vim.v.lnum then
-    -- mark_chars = return_string.sub(mark.mark, 2, 2)
-    --   -- return "%#MoodyAlphabeticMark#" .. mark_char .. "%*"
-    --   -- return (is_in_cursorline() or is_in_visual_range()) and "%#MoodyAlphabeticMarkMode#" .. table.concat(mark_chars) .. "%*"
-    --   --   or "%#MoodyAlphabeticMark#" .. mark_char .. "%*"
-    -- end
   end
+
   local alphabetic_marks_return_string = table.concat(alphabetic_mark_chars)
   local other_marks_return_string = table.concat(other_mark_chars)
+
   local return_table = {}
+
   table.insert(
     return_table,
     (is_in_cursorline() or is_in_visual_range()) and "%#MoodyOtherMarkMode#" .. other_marks_return_string
@@ -175,6 +170,7 @@ local function marks()
     (is_in_cursorline() or is_in_visual_range()) and "%#MoodyAlphabeticMarkMode#" .. alphabetic_marks_return_string
       or "%#MoodyAlphabeticMark#" .. alphabetic_marks_return_string
   )
+
   return table.concat(return_table)
 end
 
