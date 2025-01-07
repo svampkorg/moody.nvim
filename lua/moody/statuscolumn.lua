@@ -14,6 +14,9 @@ local function is_disabled(...)
   return require("moody.config").is_disabled(...)
 end
 
+local markslist = {}
+local marks_timestamp = 0
+
 local function char_on_pos(pos)
   pos = pos or vim.fn.getpos(".")
   ---@diagnostic disable-next-line: undefined-global, undefined-field
@@ -74,57 +77,38 @@ local function get_visual_range()
   return range
 end
 
+local function is_in_visual_range()
+  ---@diagnostic disable-next-line: undefined-field
+  local mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
+
+  if mode == "v" then
+    local v_range = get_visual_range()
+    return vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
+  end
+  return false
+end
+
+local function is_in_cursorline()
+  return vim.v.relnum == 0
+end
+
 local function separator()
   local colored_separator = "%#MoodySeparatorMode#" .. linenr_to_code_separator .. "%*"
   local uncolored_separator = "%#MoodySeparator#" .. linenr_to_code_separator .. "%*"
-  -- local uncolored_separator = "%#MoodySeparator#" .. linenr_to_code_separator .. "%*"
-  -- local colored_separator = "%$" .. linenr_to_code_separator .. "%*"
-  -- local uncolored_separator = "%$" .. linenr_to_code_separator .. "%*"
 
-  ---@diagnostic disable-next-line: undefined-field
-  local mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
-
-  if mode == "v" then
-    local v_range = get_visual_range()
-    local is_in_range = vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
-    return is_in_range and colored_separator or uncolored_separator
-  end
-
-  return vim.v.relnum == 0 and colored_separator or uncolored_separator
+  return (is_in_cursorline() or is_in_visual_range()) and colored_separator or uncolored_separator
 end
 
 local function number()
-  local uncolored_text = "%#LineNr#"
-  local colored_text = "%#CursorLineNr#"
-  --
-  -- if not extend_to_linenr then
-  --   return uncolored_text .. pad_start(vim.v.relnum)
-  -- end
-  -- local uncoored_separator = "%#MoodySeparator#" .. linenr_to_code_separator .. "%*"
-  -- local colored_separator = " "
-
-  ---@diagnostic disable-next-line: undefined-field
-  local mode = vim.fn.strtrans(vim.fn.mode()):lower():gsub("%W", "")
-
-  if mode == "v" then
-    local v_range = get_visual_range()
-    local is_in_range = vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
-    -- return is_in_range and colored_text .. pad_start(vim.v.lnum) .. colored_separator
-    --   or uncolored_text .. pad_start(vim.v.relnum) .. uncoored_separator
-    return (is_in_range and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum))
-  end
-
-  return (vim.v.relnum == 0 and colored_text .. pad_start(vim.v.lnum) or uncolored_text .. pad_start(vim.v.relnum))
+  return (
+    (is_in_cursorline() or is_in_visual_range()) and "%#CursorLineNr#" .. pad_start(vim.v.lnum)
+    or "%#LineNr#" .. pad_start(vim.v.relnum)
+  )
 end
 
--- local function sign()
---   -- local uncolored_text = "%#SignColumn#"
---   -- local colored_text = "%#CursorLineSign#"
---
---   -- local text_hl = "%#CursorLineSign#" or "%#SignColumn#"
---   -- return text_hl .. "%s"
---   -- return (vim.v.relnum == 0 and extend_to_signs) and colored_text .. "%s" or uncolored_text .. "%s"
--- end
+local function sign()
+  return (is_in_cursorline() or is_in_visual_range()) and "%#MoodySignColumn#%s%*" or "%#SignColumn#%s%*"
+end
 
 ---@diagnostic disable-next-line: unused-function
 local function get_marks()
@@ -144,17 +128,29 @@ local function get_marks()
   return signs
 end
 
-local function marks()
-  local buf = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
+-- Throttles mark updates
+local function update_marks_list()
+  local current_timestamp = vim.fn.localtime()
+  if current_timestamp - 1 > marks_timestamp then
+    markslist = vim.fn.getmarklist(vim.api.nvim_win_get_buf(vim.g.statusline_winid))
+    -- vim.list_extend(markslist, vim.fn.getmarklist())
+    marks_timestamp = current_timestamp
+  end
+end
 
-  local markslist = vim.fn.getmarklist(buf)
-  vim.list_extend(markslist, vim.fn.getmarklist())
+local function marks()
+  update_marks_list()
+
+  -- vim.list_extend(markslist_local, vim.fn.getmarklist())
   for _, mark in ipairs(markslist) do
     if mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z]") then
-      return "%#MoodyMark#" .. string.sub(mark.mark, 2, 2) .. "%*"
+      local mark_char = string.sub(mark.mark, 2, 2)
+      -- return "%#MoodyMark#" .. mark_char .. "%*"
+      return (is_in_cursorline() or is_in_visual_range()) and "%#MoodyMarkMode#" .. mark_char .. "%*"
+        or "%#MoodyMark#" .. mark_char .. "%*"
     end
   end
-  return ""
+  return (is_in_cursorline() or is_in_visual_range()) and "%#MoodyMarkMode#" or "%#MoodyMark#"
 end
 
 local function folds()
@@ -258,7 +254,8 @@ function M.myStatusColumn()
   end
 
   text = table.concat({
-    "%s%*", -- symbols
+    sign(),
+    -- "%s%*", -- symbols
     -- sign() .. "%*",
     marks(),
     "%=", -- right align
