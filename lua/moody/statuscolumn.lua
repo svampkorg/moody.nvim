@@ -275,14 +275,14 @@ function M.myStatusColumn()
   end
 
   text = table.concat({
-    co.signs and sign(),
+    co.signs and sign() or "",
     -- "%s%*", -- symbols
     -- sign() .. "%*",
-    co.marks and marks(),
+    co.marks and marks() or "",
     "%=", -- right align
-    co.numbers and numbers(), -- numbers
+    co.numbers and numbers() or "", -- numbers
     separator(),
-    co.folds and folds(),
+    co.folds and folds() or "",
   })
 
   return text
