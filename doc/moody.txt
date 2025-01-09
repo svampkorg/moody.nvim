@@ -47,6 +47,12 @@ moody.setup({options})                                         *moody.setup()*
       extend_to_signs = false,
       moody_column = {
         alphabetic_marks = true,
+        column_options = {
+          folds = true,
+          marks = true,
+          numbers = true,
+          signs = true
+        },
         enabled = false,
         folds_end_color = "#2F2F2F",
         folds_start_color = "#C1C1C1",
