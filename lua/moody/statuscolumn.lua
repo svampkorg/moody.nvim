@@ -10,6 +10,7 @@ local M = {}
 local linenr_to_code_separator = require("moody.config").options.moody_column.separator.char
 
 local config = require("moody.config").options
+local co = config.moody_column.column_options
 
 ---@return boolean: to disable or not to disable. That is the question.
 local function is_disabled(...)
@@ -100,7 +101,7 @@ local function separator()
   return (is_in_cursorline() or is_in_visual_range()) and colored_separator or uncolored_separator
 end
 
-local function number()
+local function numbers()
   return (
     (is_in_cursorline() or is_in_visual_range()) and "%#CursorLineNr#" .. pad_start(vim.v.lnum)
     or "%#LineNr#" .. pad_start(vim.v.relnum)
@@ -274,14 +275,14 @@ function M.myStatusColumn()
   end
 
   text = table.concat({
-    sign(),
+    co.signs and sign(),
     -- "%s%*", -- symbols
     -- sign() .. "%*",
-    marks(),
+    co.marks and marks(),
     "%=", -- right align
-    number(), -- numbers
+    co.numbers and numbers(), -- numbers
     separator(),
-    folds(),
+    co.folds and folds(),
   })
 
   return text
