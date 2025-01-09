@@ -351,12 +351,19 @@ M.defaults = {
   ---@field char string: A character to use as separator. Defaults to empty.
   ---@field color string?: A hexadecimal value to use for the foreground of separator. Defaults to bg of CursorLine
 
+  ---@class MoodyColumnOptions
+  ---@field folds boolean: Include folds
+  ---@field signs boolean: Include signs
+  ---@field marks boolean: Incluse marks
+  ---@field numbers boolean: Include line numbers
+
   ---@class MoodyColumn
   ---@field enabled boolean: use moody column
   ---@field extend_to boolean: extend moody to moody column
   ---@field folds_start_color string: hex format start color for fold levels
   ---@field folds_end_color string: hex format end color for fold levels
   ---@field separator MoodyColumnSeparator: some settings for the separator between moody_column and code
+  ---@field column_options MoodyColumnOptions: What to show in the MoodyColumn
   ---@field alphabetic_marks boolean: Show alphabetic marks in the Column
   ---@field other_marks boolean: Show other non-alphabetic marks in the Column
   moody_column = {
@@ -366,6 +373,12 @@ M.defaults = {
     separator = {
       char = "",
       color = nil,
+    },
+    column_options = {
+      folds = true,
+      signs = true,
+      marks = true,
+      numbers = true,
     },
     alphabetic_marks = true,
     other_marks = true,
