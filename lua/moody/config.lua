@@ -7,6 +7,9 @@ local function statusline_not_current()
   return vim.api.nvim_get_current_win() ~= vim.g.statusline_winid
 end
 
+local blend = require("moody.math").blend
+local tohex = require("moody.math").int_to_hex_string
+
 M.modes = {
   "normal",
   "insert",
@@ -94,11 +97,19 @@ local function setup_ns_and_hlgroups()
   M.options.hl_unblended = utils.hl_unblended()
   M.options.hl_blended = utils.hl_blended(M.options.blends)
 
+  local moody_column = M.options.moody_column
   -- local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
   local visualHl = vim.api.nvim_get_hl(0, { name = "Visual" })
   local lineNrHl = vim.api.nvim_get_hl(0, { name = "LineNr" })
+  local normalHl = vim.api.nvim_get_hl(0, { name = "Normal" })
   local signColumnHl = vim.api.nvim_get_hl(0, { name = "SignColumn" })
   local cursorLineHl = vim.api.nvim_get_hl(0, { name = "CursorLine" })
+
+  local separator_color = M.options.moody_column.separator.highlight.bg
+  if normalHl.bg and moody_column.column_options.highlight.bg then
+    separator_color = blend(tohex(normalHl.bg), 0.55, moody_column.column_options.highlight.bg)
+  end
+
   -- local cursorLineSignHl = vim.api.nvim_get_hl(0, { name = "CursorLineSign" })
   -- local cursorLineFoldHl = vim.api.nvim_get_hl(0, { name = "CursorLineFold" })
   -- local signColumnHL = vim.api.nvim_get_hl(0, { name = "SignColumn" })
@@ -111,7 +122,6 @@ local function setup_ns_and_hlgroups()
   -- local sign_default_bg = cursorLineSignHl.bg
   -- local fold_default_bg = cursorLineFoldHl.bg
 
-  local moody_column = M.options.moody_column
   local default_cursorline = M.options.default_cursorline
   local extend_to_linenr = M.options.extend_to_linenr or moody_column.enabled
   local extend_to_signs = M.options.extend_to_signs or moody_column.enabled
@@ -205,7 +215,8 @@ local function setup_ns_and_hlgroups()
     hl(M["ns_" .. mode], "MoodySeparator", {
       fg = moody_column.separator.highlight.fg or cursorline_default_bg,
       -- bg = "none",
-      bg = moody_column.separator.highlight.bg or "none",
+      -- bg = moody_column.separator.highlight.bg or "none",
+      bg = separator_color,
     })
 
     hl(M["ns_" .. mode], "MoodySeparatorMode", {
@@ -475,7 +486,7 @@ end
 ---@param win? integer: window number to trigger for
 function M.trigger_mode(event, win)
   -- event = nil
-  -- local mode = "n"
+  local mode = "n"
   if event ~= nil then
     mode = string.match(event.match, ".*:([^:]+)")
   else
