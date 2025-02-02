@@ -3,6 +3,10 @@
 ---@field options Config: config table extending defaults
 local M = {}
 
+local function statusline_not_current()
+  return vim.api.nvim_get_current_win() ~= vim.g.statusline_winid
+end
+
 M.modes = {
   "normal",
   "insert",
@@ -92,6 +96,8 @@ local function setup_ns_and_hlgroups()
 
   -- local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
   local visualHl = vim.api.nvim_get_hl(0, { name = "Visual" })
+  local lineNrHl = vim.api.nvim_get_hl(0, { name = "LineNr" })
+  local signColumnHl = vim.api.nvim_get_hl(0, { name = "SignColumn" })
   local cursorLineHl = vim.api.nvim_get_hl(0, { name = "CursorLine" })
   -- local cursorLineSignHl = vim.api.nvim_get_hl(0, { name = "CursorLineSign" })
   -- local cursorLineFoldHl = vim.api.nvim_get_hl(0, { name = "CursorLineFold" })
@@ -121,9 +127,25 @@ local function setup_ns_and_hlgroups()
     local mode_color_unblended = M.options.hl_unblended[mode]
     local mode_color_blended = M.options.hl_blended[mode]
 
+    -- local function line_color()
+    --   if statusline_not_current() then
+    --     return "none"
+    --   else
+    --     return moody_column.column_options.highlight.bg or lineNrHl.bg
+    --   end
+    -- end
+
+    hl(M["ns_" .. mode], "LineNr", {
+      fg = moody_column.column_options.highlight.fg or lineNrHl.fg,
+      bg = moody_column.column_options.highlight.bg or lineNrHl.bg,
+      -- bg = line_color(),
+    })
+    hl(M["ns_" .. mode], "SignColumn", { bg = moody_column.column_options.highlight.bg or signColumnHl.bg })
+
     hl(M["ns_" .. mode], "MoodyAlphabeticMark", {
       fg = "#ff007c",
-      bg = "none",
+      -- bg = "none",
+      bg = moody_column.column_options.highlight.bg or "none",
       -- bold = true,
     })
     hl(M["ns_" .. mode], "MoodyAlphabeticMarkMode", {
@@ -132,7 +154,8 @@ local function setup_ns_and_hlgroups()
     })
     hl(M["ns_" .. mode], "MoodyOtherMark", {
       fg = "#48ff32",
-      bg = "none",
+      -- bg = "none",
+      bg = moody_column.column_options.highlight.bg or "none",
       -- bold = true,
     })
     hl(M["ns_" .. mode], "MoodyOtherMarkMode", {
@@ -142,7 +165,8 @@ local function setup_ns_and_hlgroups()
     })
 
     hl(M["ns_" .. mode], "MoodySignColumn", {
-      bg = "none",
+      -- bg = "none",
+      bg = moody_column.column_options.highlight.bg or "none",
     })
     hl(M["ns_" .. mode], "MoodySignColumnMode", {
       bg = mode_color_blended,
@@ -179,12 +203,13 @@ local function setup_ns_and_hlgroups()
     -- })
 
     hl(M["ns_" .. mode], "MoodySeparator", {
-      fg = moody_column.separator.color or cursorline_default_bg,
-      bg = "none",
+      fg = moody_column.separator.highlight.fg or cursorline_default_bg,
+      -- bg = "none",
+      bg = moody_column.separator.highlight.bg or "none",
     })
 
     hl(M["ns_" .. mode], "MoodySeparatorMode", {
-      fg = moody_column.separator.color or cursorline_default_bg,
+      fg = moody_column.separator.highlight.fg or cursorline_default_bg,
       bg = mode_color_blended,
     })
 
@@ -347,15 +372,20 @@ M.defaults = {
     terminal = "#4CD4BD",
     terminal_n = "#00BBCC",
   },
+  ---@class Highlight
+  ---@field fg string?: forground color
+  ---@field bg string?: background color
+  ---
   ---@class MoodyColumnSeparator
   ---@field char string: A character to use as separator. Defaults to empty.
-  ---@field color string?: A hexadecimal value to use for the foreground of separator. Defaults to bg of CursorLine
+  ---@field highlight Highlight: A hexadecimal value to use for the foreground of separator. Defaults to bg of CursorLine
 
   ---@class MoodyColumnOptions
   ---@field folds boolean: Include folds
   ---@field signs boolean: Include signs
   ---@field marks boolean: Incluse marks
   ---@field numbers boolean: Include line numbers
+  ---@field highlight Highlight: highlight to use for the column. Typically a bg maybe.
 
   ---@class MoodyColumn
   ---@field enabled boolean: use moody column
@@ -372,13 +402,14 @@ M.defaults = {
     folds_end_color = "#2F2F2F",
     separator = {
       char = "",
-      color = nil,
+      highlight = {},
     },
     column_options = {
       folds = true,
       signs = true,
       marks = true,
       numbers = true,
+      highlight = {},
     },
     alphabetic_marks = true,
     other_marks = true,
@@ -390,6 +421,9 @@ M.defaults = {
     "nofile",
     "terminal",
     "prompt",
+    "snacks_picker_input",
+    "snacks_picker_preview",
+    "snacks_picker_list",
   },
   disabled_list = {},
   ---@type boolean
@@ -440,8 +474,8 @@ end
 ---@param event? any
 ---@param win? integer: window number to trigger for
 function M.trigger_mode(event, win)
-  event = nil
-  local mode = "n"
+  -- event = nil
+  -- local mode = "n"
   if event ~= nil then
     mode = string.match(event.match, ".*:([^:]+)")
   else
