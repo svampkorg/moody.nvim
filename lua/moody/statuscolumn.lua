@@ -20,6 +20,10 @@ end
 M.markslist = {}
 M.marks_timestamp = 0
 
+local function is_real_line()
+  return vim.v.virtnum == 0
+end
+
 local function char_on_pos(pos)
   pos = pos or vim.fn.getpos(".")
   ---@diagnostic disable-next-line: undefined-global, undefined-field
@@ -34,7 +38,9 @@ local function pad_start(n)
 
   width = width >= l_count_width and width or l_count_width
   local len = width - #tostring(n)
-  return len < 1 and " " .. n or (" "):rep(len + 1) .. n
+
+  local d = is_real_line() and n or ""
+  return (len < 1 and " " .. d) or (" "):rep(len + 1) .. d
 end
 
 -- borrowed from https://github.com/Wansmer/nvim-config/blob/main/lua/utils.lua#L83
@@ -81,6 +87,9 @@ local function get_visual_range()
 end
 
 local function is_in_visual_range()
+  if vim.v.virtnum ~= 0 then
+    return false
+  end
   local mode = vim.api.nvim_get_mode().mode
 
   if mode == "v" or mode == "V" then
@@ -90,13 +99,18 @@ local function is_in_visual_range()
   return false
 end
 
+--
+local function unused() end
+
 local function is_in_cursorline()
-  return vim.v.relnum == 0
+  return vim.v.relnum == 0 and vim.v.virtnum == 0
 end
 
 local function separator()
-  local colored_separator = "%#MoodySeparatorMode#" .. linenr_to_code_separator
-  local uncolored_separator = "%#MoodySeparator#" .. linenr_to_code_separator
+  -- local colored_separator = "%#MoodySeparatorMode#" .. linenr_to_code_separator
+  -- local uncolored_separator = "%#MoodySeparator#" .. linenr_to_code_separator
+  local colored_separator = "%#MoodySeparatorMode#" .. linenr_to_code_separator .. "%*"
+  local uncolored_separator = "%#MoodySeparator#" .. linenr_to_code_separator .. "%*"
 
   return (is_in_cursorline() or is_in_visual_range()) and colored_separator or uncolored_separator
 end
@@ -109,7 +123,12 @@ local function numbers()
 end
 
 local function sign()
-  return (is_in_cursorline() or is_in_visual_range()) and "%#MoodySignColumnMode#%s" or "%#MoodySignColumn#%s"
+  if not is_real_line() then
+    return "%#SignColumn#"
+  end
+
+  return (is_in_cursorline() or is_in_visual_range()) and "%#MoodySignColumnMode#%s%*" or "%#SignColumn#%s%*"
+  -- return (is_in_cursorline() or is_in_visual_range()) and "%#MoodySignColumnMode#%s" or "%#MoodySignColumn#%s"
 end
 
 -- ---@diagnostic disable-next-line: unused-function
@@ -140,6 +159,9 @@ local function update_marks_list()
 end
 
 local function marks()
+  if not is_real_line() then
+    return "%#SignColumn#"
+  end
   if not config.moody_column.alphabetic_marks and not config.moody_column.other_marks then
     return ""
   end
@@ -269,20 +291,18 @@ function M.myStatusColumn()
     return text
   end
 
-  local win = vim.g.statusline_winid
-  if vim.api.nvim_get_current_win() ~= win then
+  -- local win = vim.g.statusline_winid
+  if vim.api.nvim_get_current_win() ~= vim.g.statusline_winid then
     return text
   end
 
   text = table.concat({
     co.signs and sign() or "",
-    -- "%s%*", -- symbols
-    -- sign() .. "%*",
     co.marks and marks() or "",
     "%=", -- right align
     co.numbers and numbers() or "", -- numbers
-    separator(),
-    co.folds and folds() or "",
+    separator() or "",
+    -- co.folds and folds() or "",
   })
 
   return text
