@@ -24,6 +24,10 @@ local function is_real_line()
   return vim.v.virtnum == 0
 end
 
+local function is_in_cursorline()
+  return vim.v.relnum == 0 and vim.v.virtnum == 0
+end
+
 local function char_on_pos(pos)
   pos = pos or vim.fn.getpos(".")
   ---@diagnostic disable-next-line: undefined-global, undefined-field
@@ -86,13 +90,26 @@ local function get_visual_range()
   return range
 end
 
+local function visual_connects()
+  local v_range = get_visual_range()
+  return 1 == v_range[4] and not is_in_cursorline()
+end
+
+local function is_visual_mode()
+  local mode = vim.api.nvim_get_mode().mode
+
+  if mode == "v" or mode == "V" then
+    return true
+  end
+  return false
+end
+
 local function is_in_visual_range()
   if vim.v.virtnum ~= 0 then
     return false
   end
-  local mode = vim.api.nvim_get_mode().mode
 
-  if mode == "v" or mode == "V" then
+  if is_visual_mode() then
     local v_range = get_visual_range()
     return vim.v.lnum >= v_range[1] and vim.v.lnum <= v_range[3]
   end
@@ -101,10 +118,6 @@ end
 
 --
 local function unused() end
-
-local function is_in_cursorline()
-  return vim.v.relnum == 0 and vim.v.virtnum == 0
-end
 
 local function separator()
   -- local colored_separator = "%#MoodySeparatorMode#" .. linenr_to_code_separator
@@ -127,7 +140,19 @@ local function sign()
     return "%#SignColumn#"
   end
 
-  return (is_in_cursorline() or is_in_visual_range()) and "%#MoodySignColumnMode#%s%*" or "%#SignColumn#%s%*"
+  -- if is_visual_mode() and is_in_cursorline() then
+  --   return "%#MoodySignColumnMode#"
+  -- elseif is_in_cursorline() then
+  --   return "%#MoodySignColumnMode#%s"
+  -- elseif is_in_visual_range() then
+  --   return "%#SignColumn#"
+  -- else
+  --   return "%#SignColumn#%s"
+  -- end
+
+  -- return "%#SignColumn#%s"
+  return (is_in_cursorline() or is_in_visual_range()) and "%#MoodySignColumnMode#%s" or "%#SignColumn#%s"
+
   -- return (is_in_cursorline() or is_in_visual_range()) and "%#MoodySignColumnMode#%s" or "%#MoodySignColumn#%s"
 end
 

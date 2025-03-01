@@ -104,7 +104,9 @@ local function setup_ns_and_hlgroups()
   local normalHl = vim.api.nvim_get_hl(0, { name = "Normal" })
   local signColumnHl = vim.api.nvim_get_hl(0, { name = "SignColumn" })
   local cursorLineHl = vim.api.nvim_get_hl(0, { name = "CursorLine" })
+  local is_default_cl = M.options.default_cursorline
 
+  -- goal is rgb(27 29 44/43)
   local separator_color = M.options.moody_column.separator.highlight.bg
   if normalHl.bg and moody_column.column_options.highlight.bg then
     separator_color = blend(tohex(normalHl.bg), 0.55, moody_column.column_options.highlight.bg)
@@ -155,12 +157,12 @@ local function setup_ns_and_hlgroups()
     hl(M["ns_" .. mode], "MoodyAlphabeticMark", {
       fg = "#ff007c",
       -- bg = "none",
-      bg = moody_column.column_options.highlight.bg or "none",
+      bg = not is_default_cl and moody_column.column_options.highlight.bg or "none",
       -- bold = true,
     })
     hl(M["ns_" .. mode], "MoodyAlphabeticMarkMode", {
       fg = "#ff007c",
-      bg = mode_color_blended,
+      bg = not is_default_cl and mode_color_blended or "none",
     })
     hl(M["ns_" .. mode], "MoodyOtherMark", {
       fg = "#48ff32",
@@ -170,7 +172,7 @@ local function setup_ns_and_hlgroups()
     })
     hl(M["ns_" .. mode], "MoodyOtherMarkMode", {
       fg = "#48ff32",
-      bg = mode_color_blended,
+      bg = not is_default_cl and mode_color_blended or "none",
       -- bold = true,
     })
 
@@ -216,31 +218,33 @@ local function setup_ns_and_hlgroups()
       fg = moody_column.separator.highlight.fg or cursorline_default_bg,
       -- bg = "none",
       -- bg = moody_column.separator.highlight.bg or "none",
-      bg = separator_color,
+      bg = not is_default_cl and separator_color or "none",
     })
 
     hl(M["ns_" .. mode], "MoodySeparatorMode", {
       fg = moody_column.separator.highlight.fg or cursorline_default_bg,
-      bg = mode_color_blended,
+      bg = not is_default_cl and (mode_color_blended or cursorline_default_bg) or "none",
     })
 
     hl(M["ns_" .. mode], "MoodySign", {
-      bg = mode_color_blended,
+      bg = not is_default_cl and mode_color_blended or "none",
     })
 
-    hl(M["ns_" .. mode], "CursorLine", { bg = default_cursorline and cursorline_default_bg or mode_color_blended })
+    hl(M["ns_" .. mode], "CursorLine", { bg = mode_color_blended })
+    -- hl(M["ns_" .. mode], "CursorLine", { bg = default_cursorline and cursorline_default_bg or mode_color_blended })
+
     hl(M["ns_" .. mode], "CursorLineInverse", { fg = mode_color_blended })
 
     hl(M["ns_" .. mode], "CursorLineNr", {
       fg = mode_color_unblended,
       bold = M.options.bold_nr,
-      bg = extend_to_linenr and mode_color_blended or "none",
+      bg = not is_default_cl and (extend_to_linenr and mode_color_blended) or "none",
     })
     hl(M["ns_" .. mode], "CursorLineSign", {
-      bg = extend_to_signs and mode_color_blended or "none",
+      bg = not is_default_cl and (extend_to_signs and mode_color_blended) or "none",
     })
     hl(M["ns_" .. mode], "CursorLineFold", {
-      bg = extend_to_folds and mode_color_blended or "none",
+      bg = not is_default_cl and (extend_to_folds and mode_color_blended) or "none",
     })
 
     -- I use this for my statusline mode indicator
@@ -255,26 +259,26 @@ local function setup_ns_and_hlgroups()
       fg = mode_color_blended,
     })
 
-    if extend_to_linenr then
-      hl(M["ns_" .. mode], "CursorLineNr", {
-        fg = mode_color_unblended,
-        bold = M.options.bold_nr,
-        bg = default_cursorline and cursorline_default_bg or mode_color_blended,
-      })
-    end
+    -- if extend_to_linenr then
+    --   hl(M["ns_" .. mode], "CursorLineNr", {
+    --     fg = mode_color_unblended,
+    --     bold = M.options.bold_nr,
+    --     bg = default_cursorline and cursorline_default_bg or mode_color_blended,
+    --   })
+    -- end
 
-    if extend_to_signs then
-      hl(M["ns_" .. mode], "CursorLineSign", {
-        bg = default_cursorline and cursorline_default_bg or mode_color_blended,
-      })
-    end
+    -- if extend_to_signs then
+    --   hl(M["ns_" .. mode], "CursorLineSign", {
+    --     bg = default_cursorline and cursorline_default_bg or mode_color_blended,
+    --   })
+    -- end
 
-    if extend_to_folds then
-      hl(M["ns_" .. mode], "CursorLineFold", {
-        bg = default_cursorline and cursorline_default_bg or mode_color_blended,
-      })
-    end
-
+    -- if extend_to_folds then
+    --   hl(M["ns_" .. mode], "CursorLineFold", {
+    --     bg = default_cursorline and cursorline_default_bg or mode_color_blended,
+    --   })
+    -- end
+    --
     if moody_column.enabled then
       local fold_colors = utils.generate_gradients(
         M.options.moody_column.folds_start_color,
@@ -315,7 +319,8 @@ local function setup_ns_and_hlgroups()
     ---@diagnostic disable-next-line: undefined-field
     M.ns_visual,
     "Visual",
-    { bg = default_cursorline and visual_default_bg or M.options.hl_blended.visual }
+    -- { bg = default_cursorline and visual_default_bg or M.options.hl_blended.visual }
+    { bg = M.options.hl_blended.visual }
   )
 
   -- Special hl group in global ns for use where you might want just a normal cursorline
@@ -423,14 +428,13 @@ M.defaults = {
       highlight = {},
     },
     alphabetic_marks = true,
-    other_marks = true,
+    other_marks = false,
   },
   ---@type table<string>
   disabled_filetypes = {},
   ---@type table<string>
   disabled_buftypes = {
     "nofile",
-    "terminal",
     "prompt",
     "snacks_picker_input",
     "snacks_picker_preview",
@@ -466,6 +470,10 @@ M.defaults = {
 function M.trigger(win)
   win = win or vim.api.nvim_get_current_win()
   M.options.disabled_list["win" .. win] = nil
+  --
+  -- vim.api.nvim_set_option_value("cursorline", true, {
+  --   win = win,
+  -- })
   ---@diagnostic disable-next-line: undefined-field
   vim.api.nvim_win_set_hl_ns(win, M.ns_normal)
 end
@@ -487,11 +495,12 @@ end
 function M.trigger_mode(event, win)
   -- event = nil
   local mode = "n"
-  if event ~= nil then
+  if event and event.match ~= nil then
+    -- print(vim.inspect(event))
     mode = string.match(event.match, ".*:([^:]+)")
   else
-    ---@diagnostic disable-next-line: undefined-field
-    mode = vim.api.nvim_get_mode().mode
+    local mode_info = vim.api.nvim_get_mode()
+    mode = mode_info.mode
   end
   win = win or vim.api.nvim_get_current_win()
 
@@ -536,6 +545,10 @@ function M.trigger_mode(event, win)
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_terminal)
     end,
+    ["tl"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      vim.api.nvim_win_set_hl_ns(win, M.ns_terminal_n)
+    end,
     ["nt"] = function()
       ---@diagnostic disable-next-line: undefined-field
       vim.api.nvim_win_set_hl_ns(win, M.ns_terminal_n)
@@ -545,6 +558,8 @@ function M.trigger_mode(event, win)
       vim.api.nvim_win_set_hl_ns(win, M.ns_operator)
     end,
     ["default"] = function()
+      ---@diagnostic disable-next-line: undefined-field
+      -- vim.api.nvim_win_set_hl_ns(win, M.ns_normal)
       vim.api.nvim_set_hl_ns(0)
     end,
   })()
