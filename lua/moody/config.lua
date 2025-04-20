@@ -218,7 +218,8 @@ local function setup_ns_and_hlgroups()
       fg = moody_column.separator.highlight.fg or cursorline_default_bg,
       -- bg = "none",
       -- bg = moody_column.separator.highlight.bg or "none",
-      bg = not is_default_cl and separator_color or "none",
+      -- bg = not is_default_cl and separator_color or "none",
+      bg = separator_color or "none",
     })
 
     hl(M["ns_" .. mode], "MoodySeparatorMode", {
@@ -238,13 +239,13 @@ local function setup_ns_and_hlgroups()
     hl(M["ns_" .. mode], "CursorLineNr", {
       fg = mode_color_unblended,
       bold = M.options.bold_nr,
-      bg = not is_default_cl and (extend_to_linenr and mode_color_blended) or "none",
+      bg = not is_default_cl and (extend_to_linenr and mode_color_blended) or (moody_column.column_options.highlight.bg or "none"),
     })
     hl(M["ns_" .. mode], "CursorLineSign", {
-      bg = not is_default_cl and (extend_to_signs and mode_color_blended) or "none",
+      bg = not is_default_cl and (extend_to_signs and mode_color_blended) or (moody_column.column_options.highlight.bg or "none"),
     })
     hl(M["ns_" .. mode], "CursorLineFold", {
-      bg = not is_default_cl and (extend_to_folds and mode_color_blended) or "none",
+      bg = not is_default_cl and (extend_to_folds and mode_color_blended) or (moody_column.column_options.highlight.bg or "none"),
     })
 
     -- I use this for my statusline mode indicator
@@ -496,12 +497,18 @@ function M.trigger_mode(event, win)
   -- event = nil
   local mode = "n"
   if event and event.match ~= nil then
-    -- print(vim.inspect(event))
     mode = string.match(event.match, ".*:([^:]+)")
+    -- print(vim.inspect("using event.match ") .. mode)
   else
     local mode_info = vim.api.nvim_get_mode()
     mode = mode_info.mode
+    -- print(vim.inspect("using nvim_get_mode ") .. mode)
   end
+
+  -- if #mode == 0 then
+  --   print("mode is empty")
+  -- end
+  -- print("mode is now: " .. vim.inspect(mode))
   win = win or vim.api.nvim_get_current_win()
 
   utils.switch(mode, {

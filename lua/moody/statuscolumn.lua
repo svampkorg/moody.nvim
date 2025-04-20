@@ -312,7 +312,7 @@ end
 function M.myStatusColumn()
   local text = ""
 
-  if is_disabled(vim.bo.buftype, vim.bo.filetype) then
+  if is_disabled(vim.bo.buftype, vim.bo.filetype) or (vim.bo.buftype == "terminal") then
     return text
   end
 
