@@ -107,10 +107,15 @@ local function setup_ns_and_hlgroups()
   local is_default_cl = M.options.default_cursorline
 
   -- goal is rgb(27 29 44/43)
-  local separator_color = M.options.moody_column.separator.highlight.bg
-  if normalHl.bg and moody_column.column_options.highlight.bg then
-    separator_color = blend(tohex(normalHl.bg), 0.55, moody_column.column_options.highlight.bg)
+  -- local separator_color = M.options.moody_column.separator.highlight.bg
+  local separator_color = lineNrHl.fg
+  if normalHl.bg and lineNrHl.fg then
+    separator_color = blend(tohex(normalHl.bg), 0.55, tohex(lineNrHl.fg))
   end
+
+  -- if normalHl.bg and moody_column.column_options.highlight.bg then
+  --   separator_color = blend(tohex(normalHl.bg), 0.55, moody_column.column_options.highlight.bg)
+  -- end
 
   -- local cursorLineSignHl = vim.api.nvim_get_hl(0, { name = "CursorLineSign" })
   -- local cursorLineFoldHl = vim.api.nvim_get_hl(0, { name = "CursorLineFold" })
@@ -215,11 +220,16 @@ local function setup_ns_and_hlgroups()
     -- })
 
     hl(M["ns_" .. mode], "MoodySeparator", {
-      fg = moody_column.separator.highlight.fg or cursorline_default_bg,
+      -- fg = moody_column.separator.highlight.fg or cursorline_default_bg,
+      -- fg = lineNrHl.fg,
+      fg = separator_color,
+
       -- bg = "none",
       -- bg = moody_column.separator.highlight.bg or "none",
       -- bg = not is_default_cl and separator_color or "none",
-      bg = separator_color or "none",
+
+      bg = lineNrHl.bg,
+      -- bg = separator_color or "none",
     })
 
     hl(M["ns_" .. mode], "MoodySeparatorMode", {
