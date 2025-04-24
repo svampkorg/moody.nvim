@@ -125,7 +125,9 @@ local function separator()
   local colored_separator = "%#MoodySeparatorMode#" .. linenr_to_code_separator .. "%*"
   local uncolored_separator = "%#MoodySeparator#" .. linenr_to_code_separator .. "%*"
 
-  return (is_in_cursorline() or is_in_visual_range()) and colored_separator or uncolored_separator
+  return uncolored_separator
+
+  -- return (is_in_cursorline() or is_in_visual_range()) and colored_separator or uncolored_separator
 end
 
 local function numbers()
