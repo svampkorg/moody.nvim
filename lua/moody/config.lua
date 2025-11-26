@@ -143,6 +143,8 @@ local function setup_ns_and_hlgroups()
 
     local mode_color_unblended = M.options.hl_unblended[mode]
     local mode_color_blended = M.options.hl_blended[mode]
+    local mode_color_blended_darker = blend(tohex(normalHl.bg), 0.5, M.options.hl_blended[mode])
+    -- local mode_color_blended_darker = blend(M.options.hl_blended[mode], 0.5,"#0B0B0B")
 
     -- local function line_color()
     --   if statusline_not_current() then
@@ -242,6 +244,7 @@ local function setup_ns_and_hlgroups()
     })
 
     hl(M["ns_" .. mode], "CursorLine", { bg = mode_color_blended })
+    hl(M["ns_" .. mode], "ColorColumn", { bg = mode_color_blended_darker })
     -- hl(M["ns_" .. mode], "CursorLine", { bg = default_cursorline and cursorline_default_bg or mode_color_blended })
 
     hl(M["ns_" .. mode], "CursorLineInverse", { fg = mode_color_blended })
@@ -249,13 +252,16 @@ local function setup_ns_and_hlgroups()
     hl(M["ns_" .. mode], "CursorLineNr", {
       fg = mode_color_unblended,
       bold = M.options.bold_nr,
-      bg = not is_default_cl and (extend_to_linenr and mode_color_blended) or (moody_column.column_options.highlight.bg or "none"),
+      bg = not is_default_cl and (extend_to_linenr and mode_color_blended)
+        or (moody_column.column_options.highlight.bg or "none"),
     })
     hl(M["ns_" .. mode], "CursorLineSign", {
-      bg = not is_default_cl and (extend_to_signs and mode_color_blended) or (moody_column.column_options.highlight.bg or "none"),
+      bg = not is_default_cl and (extend_to_signs and mode_color_blended)
+        or (moody_column.column_options.highlight.bg or "none"),
     })
     hl(M["ns_" .. mode], "CursorLineFold", {
-      bg = not is_default_cl and (extend_to_folds and mode_color_blended) or (moody_column.column_options.highlight.bg or "none"),
+      bg = not is_default_cl and (extend_to_folds and mode_color_blended)
+        or (moody_column.column_options.highlight.bg or "none"),
     })
 
     -- I use this for my statusline mode indicator
@@ -335,7 +341,8 @@ local function setup_ns_and_hlgroups()
   )
 
   -- Special hl group in global ns for use where you might want just a normal cursorline
-  hl(0, "MoodyNormal", { bg = default_cursorline and cursorline_default_bg or M.options.hl_blended.normal })
+  -- hl(0, "MoodyNormal", { bg = default_cursorline and cursorline_default_bg or M.options.hl_blended.normal })
+  hl(0, "MoodyNormal", { bg = M.options.hl_blended.normal })
 end
 
 ---@class Config
