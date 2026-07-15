@@ -17,6 +17,8 @@ local function is_disabled(...)
   return require("moody.config").is_disabled(...)
 end
 
+M.global_markslist = {}
+M.local_markslist = {}
 M.markslist = {}
 M.marks_timestamp = 0
 
@@ -181,7 +183,8 @@ local function update_marks_list()
   if current_timestamp - 1 < M.marks_timestamp then
     return
   end
-  M.markslist = vim.fn.getmarklist(vim.api.nvim_win_get_buf(vim.g.statusline_winid))
+  M.local_markslist = vim.fn.getmarklist(vim.api.nvim_win_get_buf(vim.g.statusline_winid))
+  -- M.global_markslist = vim.fn.getmarklist()
   M.marks_timestamp = current_timestamp
 end
 
@@ -201,7 +204,7 @@ local function marks()
 
   local added_othermark = false
 
-  for _, mark in ipairs(M.markslist) do
+  for _, mark in ipairs(M.local_markslist) do
     if config.moody_column.alphabetic_marks and mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z]") then
       table.insert(marks_table.alphabetic, string.sub(mark.mark, 2, 2))
     elseif config.moody_column.other_marks and mark.pos[2] == vim.v.lnum and not added_othermark then
