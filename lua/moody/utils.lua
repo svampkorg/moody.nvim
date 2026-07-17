@@ -50,46 +50,43 @@ end
 --- table: a table of modes with their respective blend
 --- @return Colors: a table of all the modes with values of blended colors
 function M.hl_blended(blend)
+  -- Blend the mode colors toward the actual editor background, not a hardcoded
+  -- black. Without this the cursorline is always blended toward #000000, which
+  -- looks correct on a dark background but ignores light backgrounds entirely.
+  local base = tohex(vim.api.nvim_get_hl(0, { name = "Normal" }).bg)
+    or (vim.o.background == "light" and "#ffffff" or "#000000")
+
+  local modes = {
+    "normal",
+    "insert",
+    "visual",
+    "command",
+    "operator",
+    "replace",
+    "select",
+    "terminal",
+    "terminal_n",
+  }
+
+  local unblended = M.hl_unblended()
   local blend_type = type(blend)
-  if blend_type == "table" then
-    return {
-      normal = darken(M.hl_unblended().normal, blend.normal),
-      insert = darken(M.hl_unblended().insert, blend.insert),
-      visual = darken(M.hl_unblended().visual, blend.visual),
-      command = darken(M.hl_unblended().command, blend.command),
-      operator = darken(M.hl_unblended().operator, blend.operator),
-      replace = darken(M.hl_unblended().replace, blend.replace),
-      select = darken(M.hl_unblended().select, blend.select),
-      terminal = darken(M.hl_unblended().terminal, blend.terminal),
-      terminal_n = darken(M.hl_unblended().terminal_n, blend.terminal_n),
-    }
-  else
-    if blend_type == "number" then
-      return {
-        normal = darken(M.hl_unblended().normal, blend),
-        insert = darken(M.hl_unblended().insert, blend),
-        visual = darken(M.hl_unblended().visual, blend),
-        command = darken(M.hl_unblended().command, blend),
-        operator = darken(M.hl_unblended().operator, blend),
-        replace = darken(M.hl_unblended().replace, blend),
-        select = darken(M.hl_unblended().select, blend),
-        terminal = darken(M.hl_unblended().terminal, blend),
-        terminal_n = darken(M.hl_unblended().terminal_n, blend),
-      }
-    else
-      return {
-        normal = darken(M.hl_unblended().normal, 0.2),
-        insert = darken(M.hl_unblended().insert, 0.2),
-        visual = darken(M.hl_unblended().visual, 0.2),
-        command = darken(M.hl_unblended().command, 0.2),
-        operator = darken(M.hl_unblended().operator, 0.2),
-        replace = darken(M.hl_unblended().replace, 0.2),
-        select = darken(M.hl_unblended().select, 0.2),
-        terminal = darken(M.hl_unblended().terminal, 0.2),
-        terminal_n = darken(M.hl_unblended().terminal_n, 0.2),
-      }
+
+  -- Resolve the per-mode blend amount from either a table, a single number, or
+  -- fall back to 0.2.
+  local function amount(mode)
+    if blend_type == "table" then
+      return blend[mode]
+    elseif blend_type == "number" then
+      return blend
     end
+    return 0.2
   end
+
+  local result = {}
+  for _, mode in ipairs(modes) do
+    result[mode] = darken(unblended[mode], amount(mode), base)
+  end
+  return result
 end
 
 --- short hand method for printing stuff in neovim
