@@ -66,9 +66,9 @@ describe("moody.config.validate", function()
   end)
 
   it("rejects a wrong top-level type", function()
-    local ok, err = config.validate({ bold_nr = "yes" })
+    local ok, err = config.validate({ bold_line_number = "yes" })
     assert.is_false(ok)
-    assert.is_truthy(err:match("bold_nr"))
+    assert.is_truthy(err:match("bold_line_number"))
   end)
 
   it("accepts valid hex colors", function()

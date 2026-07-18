@@ -124,7 +124,7 @@ end
 -- TODO: colour it with the mode (MoodySeparatorMode) when the cursor or a
 -- visual selection is on the line, i.e. is_in_cursorline() or is_in_visual_range().
 local function separator()
-  local sep_char = options().moody_column.separator.char
+  local sep_char = options().column.separator.char
   return "%#MoodySeparator#" .. sep_char .. "%*"
 end
 
@@ -188,8 +188,8 @@ local function marks()
   if not is_real_line() then
     return "%#SignColumn#"
   end
-  local mc = options().moody_column
-  if not mc.alphabetic_marks and not mc.other_marks then
+  local marks_opt = options().column.marks
+  if not marks_opt.alphabetic and not marks_opt.other then
     return ""
   end
   update_marks_list()
@@ -202,9 +202,9 @@ local function marks()
   local added_othermark = false
 
   for _, mark in ipairs(M.local_markslist) do
-    if mc.alphabetic_marks and mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z]") then
+    if marks_opt.alphabetic and mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z]") then
       table.insert(marks_table.alphabetic, string.sub(mark.mark, 2, 2))
-    elseif mc.other_marks and mark.pos[2] == vim.v.lnum and not added_othermark then
+    elseif marks_opt.other and mark.pos[2] == vim.v.lnum and not added_othermark then
       table.insert(marks_table.other, string.sub(mark.mark, 2, 2))
     end
   end
@@ -323,14 +323,14 @@ function M.myStatusColumn()
     return text
   end
 
-  local co = options().moody_column.column_options
+  local column = options().column
   text = table.concat({
-    co.signs and sign() or "",
-    co.marks and marks() or "",
+    column.signs and sign() or "",
+    column.marks.enabled and marks() or "",
     "%=", -- right align
-    co.numbers and numbers() or "", -- numbers
+    column.numbers and numbers() or "", -- numbers
     separator() or "",
-    -- co.folds and folds() or "",
+    -- column.folds.enabled and folds() or "",
   })
 
   return text

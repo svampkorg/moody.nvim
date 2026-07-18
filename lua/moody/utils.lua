@@ -35,7 +35,7 @@ end
 ---@param filetype string: the filetype to check if it's disabled
 ---@return boolean: true if filetype was in list of disabled filetypes
 function M.is_disabled_filetype(filetype)
-  local disabled_filetypes = require("moody.config").options.disabled_filetypes
+  local disabled_filetypes = require("moody.config").options.disabled.filetypes
   return vim.tbl_contains(disabled_filetypes, filetype)
 end
 
