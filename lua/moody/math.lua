@@ -1,8 +1,9 @@
 ---@class MathModule
----@field int_to_hex_string function: Will return the bigger number
----@field blend function: Blends two colors together with an amount from 0 to 1,
---- 0 being one color and 1 being the other.
+---@field int_to_hex_string function: convert an integer colour to a "#rrggbb" string
+---@field rgb function: split a "#rrggbb" string into {r, g, b} channels
+---@field blend function: mix two colours by an amount from 0 (bg) to 1 (fg)
 local M = {}
+
 --- Will turn a integer colour value into a string hex value
 --- @param number number: an integer number to convert
 --- @return string: the string representation of the integer in a '%06x' format
@@ -15,11 +16,11 @@ function M.int_to_hex_string(number)
   end
 end
 
--- "Borrowed" from Mr Folke TokyoNight :)
--- https://github.com/folke/tokyonight.nvim/blob/66a272ba6cf93bf303c4b7a91b100ca0dd3ec7bd/lua/tokyonight/util.lua#L30
+-- Colour blending "borrowed" from folke/tokyonight.nvim (lua/tokyonight/util.lua).
+-- M.bg / M.fg are the fallback endpoints when blend() is called without an
+-- explicit background/foreground.
 M.bg = "#000000"
 M.fg = "#ffffff"
-M.m_day_brightness = 0.3
 
 ---@param c  string
 function M.rgb(c)
@@ -42,16 +43,5 @@ function M.blend(foreground, alpha, background)
 
   return string.format("#%02x%02x%02x", blendChannel(1), blendChannel(2), blendChannel(3))
 end
-
-function M.blend_bg(hex, amount, bg)
-  return M.blend(hex, amount, bg or M.bg)
-end
-
-function M.blend_fg(hex, amount, fg)
-  return M.blend(hex, amount, fg or M.fg)
-end
-
-M.darken = M.blend_bg
-M.lighten = M.blend_fg
 
 return M

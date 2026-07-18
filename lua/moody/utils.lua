@@ -5,9 +5,7 @@
 ---@field hl_blended function: calculate new blends using either a number or Blend
 local M = {}
 
-local darken = require("moody.math").darken
-local blend_c = require("moody.math").blend
-
+local blend = require("moody.math").blend
 local tohex = require("moody.math").int_to_hex_string
 
 --- switch between string choice in table of string key, and table value choices
@@ -41,36 +39,36 @@ function M.is_disabled_filetype(filetype)
   return vim.tbl_contains(disabled_filetypes, filetype)
 end
 
----@alias blend function
---- get darkened variant of the HL colours
---- @param blend table|number: number: a number between 0 and 1 used to darken.
---- table: a table of modes with their respective blend
+--- Blend each mode's base colour toward the editor background.
+--- @param blends table|number: a single blend amount (0..1) applied to every
+--- mode, or a table of per-mode amounts. Higher values are darker (on a dark
+--- background).
 --- @return Colors: a table of all the modes with values of blended colors
-function M.hl_blended(blend)
-  -- Blend the mode colors toward the actual editor background, not a hardcoded
-  -- black. Without this the cursorline is always blended toward #000000, which
-  -- looks correct on a dark background but ignores light backgrounds entirely.
+function M.hl_blended(blends)
+  -- Blend toward the actual editor background, not a hardcoded black. Without
+  -- this the cursorline is always blended toward #000000, which looks correct
+  -- on a dark background but ignores light backgrounds entirely.
   local base = tohex(vim.api.nvim_get_hl(0, { name = "Normal" }).bg)
     or (vim.o.background == "light" and "#ffffff" or "#000000")
 
   local modes = require("moody.config").modes
   local unblended = M.hl_unblended()
-  local blend_type = type(blend)
+  local blends_type = type(blends)
 
   -- Resolve the per-mode blend amount from either a table, a single number, or
   -- fall back to 0.2.
   local function amount(mode)
-    if blend_type == "table" then
-      return blend[mode]
-    elseif blend_type == "number" then
-      return blend
+    if blends_type == "table" then
+      return blends[mode] or 0.2
+    elseif blends_type == "number" then
+      return blends
     end
     return 0.2
   end
 
   local result = {}
   for _, mode in ipairs(modes) do
-    result[mode] = darken(unblended[mode], amount(mode), base)
+    result[mode] = blend(unblended[mode], amount(mode), base)
   end
   return result
 end
@@ -135,7 +133,7 @@ function M.generate_gradients(first, second, steps)
 
   -- var, limit, step
   for step = 0, 1, increment do
-    table.insert(colors, blend_c(first, step, second))
+    table.insert(colors, blend(first, step, second))
   end
   return colors
 end
