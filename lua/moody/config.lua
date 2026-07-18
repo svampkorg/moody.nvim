@@ -599,7 +599,68 @@ end
 --- because it has `__` as prefix. This is the one exception
 --- Setup options by extending defaults with the options proveded by the user
 ---@param options Config: config table
+--- Validate user-supplied options before they are merged with the defaults.
+--- Only keys the user actually set are checked, so partial configs pass. On the
+--- first problem it stops and returns a human-readable message naming the key.
+---@param options table? raw options passed to setup()
+---@return boolean ok, string? err
+function M.validate(options)
+  if options == nil then
+    return true
+  end
+  if type(options) ~= "table" then
+    return false, ("expected options to be a table, got %s"):format(type(options))
+  end
+
+  local expected = {
+    blends = "table",
+    colors = "table",
+    disabled_filetypes = "table",
+    disabled_buftypes = "table",
+    disabled_list = "table",
+    bold_nr = "boolean",
+    default_cursorline = "boolean",
+    extend_to_linenr = "boolean",
+    extend_to_signs = "boolean",
+    extend_to_folds = "boolean",
+    recording = "table",
+    moody_column = "table",
+  }
+  for key, kind in pairs(expected) do
+    local value = options[key]
+    if value ~= nil and type(value) ~= kind then
+      return false, ("`%s` should be %s, got %s"):format(key, kind, type(value))
+    end
+  end
+
+  -- colors must be "#RRGGBB" hex strings
+  if options.colors then
+    for mode, color in pairs(options.colors) do
+      if type(color) ~= "string" or not color:match("^#%x%x%x%x%x%x$") then
+        return false, ('`colors.%s` should be a "#RRGGBB" hex string'):format(tostring(mode))
+      end
+    end
+  end
+
+  -- blends must be numbers in [0, 1]
+  if options.blends then
+    for mode, amount in pairs(options.blends) do
+      if type(amount) ~= "number" or amount < 0 or amount > 1 then
+        return false, ("`blends.%s` should be a number between 0 and 1"):format(tostring(mode))
+      end
+    end
+  end
+
+  return true
+end
+
 function M.__setup(options)
+  local ok, err = M.validate(options)
+  if not ok then
+    vim.notify("[moody] invalid config: " .. err, vim.log.levels.ERROR)
+    return
+  end
+
   M.options = vim.tbl_deep_extend("force", {}, M.defaults, options or {})
 
   local mode_group = vim.api.nvim_create_augroup("MoodyModeGroup", { clear = true })
