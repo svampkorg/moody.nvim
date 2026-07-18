@@ -3,10 +3,6 @@
 ---@field options Config: config table extending defaults
 local M = {}
 
-local function statusline_not_current()
-  return vim.api.nvim_get_current_win() ~= vim.g.statusline_winid
-end
-
 local blend = require("moody.math").blend
 local tohex = require("moody.math").int_to_hex_string
 
@@ -99,7 +95,6 @@ local function setup_ns_and_hlgroups()
 
   local moody_column = M.options.moody_column
   -- local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
-  local visualHl = vim.api.nvim_get_hl(0, { name = "Visual" })
   local lineNrHl = vim.api.nvim_get_hl(0, { name = "LineNr" })
   local normalHl = vim.api.nvim_get_hl(0, { name = "Normal" })
   local signColumnHl = vim.api.nvim_get_hl(0, { name = "SignColumn" })
@@ -122,7 +117,6 @@ local function setup_ns_and_hlgroups()
   -- local signColumnHL = vim.api.nvim_get_hl(0, { name = "SignColumn" })
   -- local foldColumnHL = vim.api.nvim_get_hl(0, { name = "FoldColumn" })
 
-  local visual_default_bg = visualHl.bg
   local cursorline_default_bg = cursorLineHl.bg
   -- local cursorline_sign_default_bg = cursorLineSignHl.bg
   -- local cursorline_fold_default_bg = cursorLineFoldHl.bg
@@ -412,7 +406,8 @@ M.defaults = {
   ---
   ---@class MoodyColumnSeparator
   ---@field char string: A character to use as separator. Defaults to empty.
-  ---@field highlight Highlight: A hexadecimal value to use for the foreground of separator. Defaults to bg of CursorLine
+  ---@field highlight Highlight: A hexadecimal value to use for the foreground
+  --- of separator. Defaults to bg of CursorLine
 
   ---@class MoodyColumnOptions
   ---@field folds boolean: Include folds
@@ -512,7 +507,7 @@ end
 ---@param win? integer: window number to trigger for
 function M.trigger_mode(event, win)
   -- event = nil
-  local mode = "n"
+  local mode
   if event and event.match ~= nil then
     mode = string.match(event.match, ".*:([^:]+)")
     -- print(vim.inspect("using event.match ") .. mode)
