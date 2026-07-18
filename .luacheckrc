@@ -29,9 +29,12 @@ read_globals = {
 }
 
 files = {
-  -- ["lua/telescope/builtin/init.lua"] = {
-  --   ignore = {
-  --     "631", -- allow line len > 120
-  --   },
-  -- },
+  ["lua/moody/statuscolumn.lua"] = {
+    -- `folds` and `visual_connects` are work-in-progress renderers not yet wired
+    -- into myStatusColumn (see the commented call sites). Keep them without
+    -- luacheck flagging them as unused.
+    ignore = {
+      "211", -- unused local / function
+    },
+  },
 }
