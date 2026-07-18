@@ -21,20 +21,18 @@ function M.switch(choice, choices)
   return choices[choice] or choices["default"]
 end
 
+--- Resolve each mode's base colour: the `*Moody` highlight group's foreground
+--- if a colorscheme defines it, otherwise the colour from the user config.
 ---@return Colors
 function M.hl_unblended()
-  local options = require("moody.config").options
-  return {
-    normal = tohex(vim.api.nvim_get_hl(0, { name = "NormalMoody" }).fg) or options.colors.normal,
-    insert = tohex(vim.api.nvim_get_hl(0, { name = "InsertMoody" }).fg) or options.colors.insert,
-    visual = tohex(vim.api.nvim_get_hl(0, { name = "VisualMoody" }).fg) or options.colors.visual,
-    command = tohex(vim.api.nvim_get_hl(0, { name = "CommandMoody" }).fg) or options.colors.command,
-    operator = tohex(vim.api.nvim_get_hl(0, { name = "OperatorMoody" }).fg) or options.colors.operator,
-    replace = tohex(vim.api.nvim_get_hl(0, { name = "ReplaceMoody" }).fg) or options.colors.replace,
-    select = tohex(vim.api.nvim_get_hl(0, { name = "SelectMoody" }).fg) or options.colors.select,
-    terminal = tohex(vim.api.nvim_get_hl(0, { name = "TerminalMoody" }).fg) or options.colors.terminal,
-    terminal_n = tohex(vim.api.nvim_get_hl(0, { name = "TerminalNormalMoody" }).fg) or options.colors.terminal_n,
-  }
+  local config = require("moody.config")
+  local colors = config.options.colors
+  local result = {}
+  for _, mode in ipairs(config.modes) do
+    local group_fg = tohex(vim.api.nvim_get_hl(0, { name = config.mode_hl_groups[mode] }).fg)
+    result[mode] = group_fg or colors[mode]
+  end
+  return result
 end
 
 ---@param filetype string: the filetype to check if it's disabled
@@ -56,18 +54,7 @@ function M.hl_blended(blend)
   local base = tohex(vim.api.nvim_get_hl(0, { name = "Normal" }).bg)
     or (vim.o.background == "light" and "#ffffff" or "#000000")
 
-  local modes = {
-    "normal",
-    "insert",
-    "visual",
-    "command",
-    "operator",
-    "replace",
-    "select",
-    "terminal",
-    "terminal_n",
-  }
-
+  local modes = require("moody.config").modes
   local unblended = M.hl_unblended()
   local blend_type = type(blend)
 
