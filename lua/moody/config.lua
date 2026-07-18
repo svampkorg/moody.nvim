@@ -6,6 +6,11 @@ local M = {}
 local blend = require("moody.math").blend
 local tohex = require("moody.math").int_to_hex_string
 
+-- Single source of truth for the modes moody colours. `M.modes` fixes the order
+-- (namespace creation iterates it); `M.mode_hl_groups` maps each mode to the
+-- `*Moody` highlight group a colorscheme can define to override its colour.
+-- Everything mode-related (namespaces, blended/unblended colours) derives from
+-- these two — do not hardcode the list anywhere else.
 M.modes = {
   "normal",
   "insert",
@@ -16,6 +21,18 @@ M.modes = {
   "select",
   "terminal",
   "terminal_n",
+}
+
+M.mode_hl_groups = {
+  normal = "NormalMoody",
+  insert = "InsertMoody",
+  visual = "VisualMoody",
+  command = "CommandMoody",
+  operator = "OperatorMoody",
+  replace = "ReplaceMoody",
+  select = "SelectMoody",
+  terminal = "TerminalMoody",
+  terminal_n = "TerminalNormalMoody",
 }
 
 local hl = require("moody.utils").change_hl_property
