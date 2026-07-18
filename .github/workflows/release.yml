@@ -11,19 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Release
-        uses: nvim-neorocks/luarocks-tag-release@v5
+        uses: nvim-neorocks/luarocks-tag-release@v7
         env:
           LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}
         with:
+          summary: Colour the Neovim cursorline by the current mode.
           detailed_description: |
-            A simple way to kickstart your Neovim plugin development like a pro with:
-            - Plugin Structure
-            - Tests
-            - Docs Generation
-            - Linting and Formatting
-            - Deployment
+            moody recolours the cursorline and line number as you switch modes,
+            so a glance tells you whether you're in normal, insert, visual, and so
+            on — no looking down at the statusline. Optionally it extends the
+            colour into the number, sign and fold columns, draws its own status
+            column (folds, marks, signs), and shows a macro-recording indicator on
+            the cursorline. Colours come from your config or from `*Moody`
+            highlight groups your colorscheme defines.
           dependencies: |
             plenary.nvim
           copy_directories: |
@@ -35,6 +37,6 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
