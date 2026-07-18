@@ -5,12 +5,13 @@ local error = ffi.new("Error")
 -- local statuscolumn = {}
 
 local M = {}
--- options for extending cursorline to linenumbers and also using moody's statuscolumn
 
-local linenr_to_code_separator = require("moody.config").options.moody_column.separator.char
-
-local config = require("moody.config").options
-local co = config.moody_column.column_options
+--- Live view of the moody config. Read through this rather than caching a
+--- reference at module load: __setup() reassigns options on every setup() call,
+--- so a captured table would go stale on re-configuration.
+local function options()
+  return require("moody.config").options
+end
 
 ---@return boolean: to disable or not to disable. That is the question.
 local function is_disabled(...)
@@ -92,6 +93,7 @@ local function get_visual_range()
   return range
 end
 
+---@diagnostic disable-next-line: unused-local
 local function visual_connects()
   local v_range = get_visual_range()
   return 1 == v_range[4] and not is_in_cursorline()
@@ -118,18 +120,12 @@ local function is_in_visual_range()
   return false
 end
 
---
-local function unused() end
-
+-- The separator always renders uncoloured for now.
+-- TODO: colour it with the mode (MoodySeparatorMode) when the cursor or a
+-- visual selection is on the line, i.e. is_in_cursorline() or is_in_visual_range().
 local function separator()
-  -- local colored_separator = "%#MoodySeparatorMode#" .. linenr_to_code_separator
-  -- local uncolored_separator = "%#MoodySeparator#" .. linenr_to_code_separator
-  local colored_separator = "%#MoodySeparatorMode#" .. linenr_to_code_separator .. "%*"
-  local uncolored_separator = "%#MoodySeparator#" .. linenr_to_code_separator .. "%*"
-
-  return uncolored_separator
-
-  -- return (is_in_cursorline() or is_in_visual_range()) and colored_separator or uncolored_separator
+  local sep_char = options().moody_column.separator.char
+  return "%#MoodySeparator#" .. sep_char .. "%*"
 end
 
 local function numbers()
@@ -192,7 +188,8 @@ local function marks()
   if not is_real_line() then
     return "%#SignColumn#"
   end
-  if not config.moody_column.alphabetic_marks and not config.moody_column.other_marks then
+  local mc = options().moody_column
+  if not mc.alphabetic_marks and not mc.other_marks then
     return ""
   end
   update_marks_list()
@@ -205,9 +202,9 @@ local function marks()
   local added_othermark = false
 
   for _, mark in ipairs(M.local_markslist) do
-    if config.moody_column.alphabetic_marks and mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z]") then
+    if mc.alphabetic_marks and mark.pos[2] == vim.v.lnum and mark.mark:match("[a-zA-Z]") then
       table.insert(marks_table.alphabetic, string.sub(mark.mark, 2, 2))
-    elseif config.moody_column.other_marks and mark.pos[2] == vim.v.lnum and not added_othermark then
+    elseif mc.other_marks and mark.pos[2] == vim.v.lnum and not added_othermark then
       table.insert(marks_table.other, string.sub(mark.mark, 2, 2))
     end
   end
@@ -232,6 +229,7 @@ local function marks()
   return table.concat(return_table)
 end
 
+---@diagnostic disable-next-line: unused-local
 local function folds()
   local win = vim.g.statusline_winid
   local wp = C.find_window_by_handle(win, error)
@@ -321,11 +319,11 @@ function M.myStatusColumn()
     return text
   end
 
-  -- local win = vim.g.statusline_winid
   if vim.api.nvim_get_current_win() ~= vim.g.statusline_winid then
     return text
   end
 
+  local co = options().moody_column.column_options
   text = table.concat({
     co.signs and sign() or "",
     co.marks and marks() or "",
