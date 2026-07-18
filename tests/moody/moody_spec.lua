@@ -93,3 +93,39 @@ describe("moody.config.validate", function()
     assert.is_true(config.validate(config.defaults))
   end)
 end)
+
+describe("moody.config.trigger_mode", function()
+  local win
+
+  before_each(function()
+    config.__setup({})
+    win = vim.api.nvim_get_current_win()
+    config._applied_ns[win] = nil
+  end)
+
+  it("applies the operator namespace on entering operator-pending", function()
+    config.trigger_mode({ match = "n:no" }, win)
+    assert.equals(config.ns_operator, config._applied_ns[win])
+  end)
+
+  it("restores the normal namespace on returning from operator-pending", function()
+    config.trigger_mode({ match = "n:no" }, win)
+    config.trigger_mode({ match = "no:n" }, win)
+    assert.equals(config.ns_normal, config._applied_ns[win])
+  end)
+
+  it("self-heals a stuck window from the actual mode when event is nil", function()
+    -- Simulate a stale operator colour that no ModeChanged corrected (e.g. the
+    -- no:n fired while a disabled popup was the current window).
+    config.trigger_mode({ match = "n:no" }, win)
+    assert.equals(config.ns_operator, config._applied_ns[win])
+    -- SafeState path: no event, reads the real mode (normal in a test run).
+    config.trigger_mode(nil, win)
+    assert.equals(config.ns_normal, config._applied_ns[win])
+  end)
+
+  it("resets unknown modes to the global namespace", function()
+    config.trigger_mode({ match = "n:zz" }, win)
+    assert.equals(0, config._applied_ns[win])
+  end)
+end)

@@ -500,88 +500,61 @@ function M.reset(win)
   vim.api.nvim_set_hl_ns(0)
 end
 
---- switches the hl-namespace depending on the mode in event.
---- only usefull for ModeChanged event, as it's used in
---- ModeChanged autocommand inside this plugin.
+-- Map a mode (or sub-mode) string to the `M.ns_*` field holding its namespace.
+-- Operator-pending has forced-motion variants (`no`, `nov`, `noV`, `no<C-v>`);
+-- blockwise visual/select are the raw <C-v>/<C-s> bytes.
+local mode_ns = {
+  ["n"] = "ns_normal",
+  ["i"] = "ns_insert",
+  ["ix"] = "ns_insert",
+  ["v"] = "ns_visual",
+  ["V"] = "ns_visual",
+  ["\22"] = "ns_visual", -- <C-v> blockwise visual
+  ["c"] = "ns_command",
+  ["r"] = "ns_replace",
+  ["s"] = "ns_select",
+  ["S"] = "ns_select",
+  ["\19"] = "ns_select", -- <C-s> blockwise select
+  ["t"] = "ns_terminal",
+  ["tl"] = "ns_terminal_n",
+  ["nt"] = "ns_terminal_n",
+  ["no"] = "ns_operator",
+  ["nov"] = "ns_operator",
+  ["noV"] = "ns_operator",
+  ["no\22"] = "ns_operator",
+}
+
+-- Remember the namespace last applied to each window so we can skip redundant
+-- `nvim_win_set_hl_ns` calls (and the redraw they trigger). This also lets the
+-- SafeState self-heal run cheaply on every idle without churning highlights.
+M._applied_ns = M._applied_ns or {}
+
+--- switches the hl-namespace depending on the mode.
+--- Reads the mode from the ModeChanged event when given, otherwise from
+--- `nvim_get_mode()` (used by the SafeState self-heal). Sets the window-local
+--- namespace only when it actually changes.
 ---@param event? any
 ---@param win? integer: window number to trigger for
 function M.trigger_mode(event, win)
-  -- event = nil
   local mode
   if event and event.match ~= nil then
     mode = string.match(event.match, ".*:([^:]+)")
-    -- print(vim.inspect("using event.match ") .. mode)
   else
-    local mode_info = vim.api.nvim_get_mode()
-    mode = mode_info.mode
-    -- print(vim.inspect("using nvim_get_mode ") .. mode)
+    mode = vim.api.nvim_get_mode().mode
   end
 
-  -- if #mode == 0 then
-  --   print("mode is empty")
-  -- end
-  -- print("mode is now: " .. vim.inspect(mode))
   win = win or vim.api.nvim_get_current_win()
 
-  utils.switch(mode, {
-    ["n"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_normal)
-    end,
-    ["i"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_insert)
-    end,
-    ["ix"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_insert)
-    end,
-    ["v"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
-    end,
-    ["V"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
-    end,
-    [""] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_visual)
-    end,
-    ["c"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_command)
-    end,
-    ["r"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_replace)
-    end,
-    ["s"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_select)
-    end,
-    ["t"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_terminal)
-    end,
-    ["tl"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_terminal_n)
-    end,
-    ["nt"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_terminal_n)
-    end,
-    ["no"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      vim.api.nvim_win_set_hl_ns(win, M.ns_operator)
-    end,
-    ["default"] = function()
-      ---@diagnostic disable-next-line: undefined-field
-      -- vim.api.nvim_win_set_hl_ns(win, M.ns_normal)
-      vim.api.nvim_set_hl_ns(0)
-    end,
-  })()
+  -- Resolve to a concrete namespace id. Unknown modes reset the window to the
+  -- global namespace (0) so a stale mode colour is never left behind.
+  local ns_key = mode_ns[mode]
+  ---@diagnostic disable-next-line: undefined-field
+  local target = (ns_key and M[ns_key]) or 0
+
+  if M._applied_ns[win] ~= target then
+    vim.api.nvim_win_set_hl_ns(win, target)
+    M._applied_ns[win] = target
+  end
 end
 
 local function setup_statuscolumn()
@@ -704,6 +677,24 @@ function M.__setup(options)
       end
 
       M.trigger_mode(event)
+    end,
+  })
+
+  -- Self-heal: some mode transitions never emit a ModeChanged we can catch
+  -- (notably aborting operator-pending with <Esc>, which can leave the
+  -- cursorline stuck on the operator colour). SafeState fires whenever Neovim
+  -- finishes processing and is about to wait for input, so it is the ideal
+  -- point to re-sync the window to its real mode. trigger_mode() is a no-op
+  -- when the namespace is already correct, so this stays cheap.
+  vim.api.nvim_create_autocmd("SafeState", {
+    desc = "re-sync cursorline to the actual mode when Neovim goes idle",
+    group = mode_group,
+    callback = function()
+      if M.is_disabled(vim.bo.buftype, vim.bo.filetype) then
+        return
+      end
+
+      M.trigger_mode(nil)
     end,
   })
 
