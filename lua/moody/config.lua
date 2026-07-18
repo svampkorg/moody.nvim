@@ -111,43 +111,25 @@ local function setup_ns_and_hlgroups()
   M.options.hl_blended = utils.hl_blended(M.options.blends)
 
   local moody_column = M.options.moody_column
-  -- local statusLineHl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
   local lineNrHl = vim.api.nvim_get_hl(0, { name = "LineNr" })
   local normalHl = vim.api.nvim_get_hl(0, { name = "Normal" })
   local signColumnHl = vim.api.nvim_get_hl(0, { name = "SignColumn" })
   local cursorLineHl = vim.api.nvim_get_hl(0, { name = "CursorLine" })
   local is_default_cl = M.options.default_cursorline
 
-  -- goal is rgb(27 29 44/43)
-  -- local separator_color = M.options.moody_column.separator.highlight.bg
+  -- Separator between the moody column and the code: blend the LineNr
+  -- foreground toward the editor background.
   local separator_color = lineNrHl.fg
   if normalHl.bg and lineNrHl.fg then
     separator_color = blend(tohex(normalHl.bg), 0.55, tohex(lineNrHl.fg))
   end
 
-  -- if normalHl.bg and moody_column.column_options.highlight.bg then
-  --   separator_color = blend(tohex(normalHl.bg), 0.55, moody_column.column_options.highlight.bg)
-  -- end
-
-  -- local cursorLineSignHl = vim.api.nvim_get_hl(0, { name = "CursorLineSign" })
-  -- local cursorLineFoldHl = vim.api.nvim_get_hl(0, { name = "CursorLineFold" })
-  -- local signColumnHL = vim.api.nvim_get_hl(0, { name = "SignColumn" })
-  -- local foldColumnHL = vim.api.nvim_get_hl(0, { name = "FoldColumn" })
-
   local cursorline_default_bg = cursorLineHl.bg
-  -- local cursorline_sign_default_bg = cursorLineSignHl.bg
-  -- local cursorline_fold_default_bg = cursorLineFoldHl.bg
-  -- local sign_default_bg = cursorLineSignHl.bg
-  -- local fold_default_bg = cursorLineFoldHl.bg
 
   local default_cursorline = M.options.default_cursorline
   local extend_to_linenr = M.options.extend_to_linenr or moody_column.enabled
   local extend_to_signs = M.options.extend_to_signs or moody_column.enabled
   local extend_to_folds = M.options.extend_to_folds or moody_column.enabled
-
-  -- local extend_to_linenr = M.options.extend_to_linenr
-  -- local extend_to_signs = M.options.extend_to_signs
-  -- local extend_to_folds = M.options.extend_to_folds
 
   for _, mode in ipairs(M.modes) do
     M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
@@ -155,28 +137,16 @@ local function setup_ns_and_hlgroups()
     local mode_color_unblended = M.options.hl_unblended[mode]
     local mode_color_blended = M.options.hl_blended[mode]
     local mode_color_blended_darker = blend(tohex(normalHl.bg), 0.5, M.options.hl_blended[mode])
-    -- local mode_color_blended_darker = blend(M.options.hl_blended[mode], 0.5,"#0B0B0B")
-
-    -- local function line_color()
-    --   if statusline_not_current() then
-    --     return "none"
-    --   else
-    --     return moody_column.column_options.highlight.bg or lineNrHl.bg
-    --   end
-    -- end
 
     hl(M["ns_" .. mode], "LineNr", {
       fg = moody_column.column_options.highlight.fg or lineNrHl.fg,
       bg = moody_column.column_options.highlight.bg or lineNrHl.bg,
-      -- bg = line_color(),
     })
     hl(M["ns_" .. mode], "SignColumn", { bg = moody_column.column_options.highlight.bg or signColumnHl.bg })
 
     hl(M["ns_" .. mode], "MoodyAlphabeticMark", {
       fg = "#ff007c",
-      -- bg = "none",
       bg = not is_default_cl and moody_column.column_options.highlight.bg or "none",
-      -- bold = true,
     })
     hl(M["ns_" .. mode], "MoodyAlphabeticMarkMode", {
       fg = "#ff007c",
@@ -184,33 +154,20 @@ local function setup_ns_and_hlgroups()
     })
     hl(M["ns_" .. mode], "MoodyOtherMark", {
       fg = "#48ff32",
-      -- bg = "none",
       bg = moody_column.column_options.highlight.bg or "none",
-      -- bold = true,
     })
     hl(M["ns_" .. mode], "MoodyOtherMarkMode", {
       fg = "#48ff32",
       bg = not is_default_cl and mode_color_blended or "none",
-      -- bold = true,
     })
 
     hl(M["ns_" .. mode], "MoodySignColumn", {
-      -- bg = "none",
       bg = moody_column.column_options.highlight.bg or "none",
     })
     hl(M["ns_" .. mode], "MoodySignColumnMode", {
       bg = mode_color_blended,
     })
 
-    -- hl(M["ns_" .. mode], "MiniDiffSignAddMoody", {
-    --   bg = mode_color_blended,
-    -- })
-    -- hl(M["ns_" .. mode], "MiniDiffSignChangeMoody", {
-    --   bg = mode_color_blended,
-    -- })
-    -- hl(M["ns_" .. mode], "MiniDiffSingDeleteMoody", {
-    --   bg = mode_color_blended,
-    -- })
     hl(M["ns_" .. mode], "MoodyAdded", {
       link = "Added",
       bg = mode_color_blended,
@@ -224,25 +181,9 @@ local function setup_ns_and_hlgroups()
       bg = mode_color_blended,
     })
 
-    -- hl(M["ns_" .. mode], "MoodyColumnInVisual", {
-    --   bg = M.options.hl_blended["visual"],
-    -- })
-
-    -- hl(M["ns_" .. mode], "SignVisual", {
-    --   bg = M.options.hl_blended["visual"],
-    -- })
-
     hl(M["ns_" .. mode], "MoodySeparator", {
-      -- fg = moody_column.separator.highlight.fg or cursorline_default_bg,
-      -- fg = lineNrHl.fg,
       fg = separator_color,
-
-      -- bg = "none",
-      -- bg = moody_column.separator.highlight.bg or "none",
-      -- bg = not is_default_cl and separator_color or "none",
-
       bg = lineNrHl.bg,
-      -- bg = separator_color or "none",
     })
 
     hl(M["ns_" .. mode], "MoodySeparatorMode", {
@@ -256,7 +197,6 @@ local function setup_ns_and_hlgroups()
 
     hl(M["ns_" .. mode], "CursorLine", { bg = mode_color_blended })
     hl(M["ns_" .. mode], "ColorColumn", { bg = mode_color_blended_darker })
-    -- hl(M["ns_" .. mode], "CursorLine", { bg = default_cursorline and cursorline_default_bg or mode_color_blended })
 
     hl(M["ns_" .. mode], "CursorLineInverse", { fg = mode_color_blended })
 
@@ -275,7 +215,7 @@ local function setup_ns_and_hlgroups()
         or (moody_column.column_options.highlight.bg or "none"),
     })
 
-    -- I use this for my statusline mode indicator
+    -- Exposed for a statusline mode indicator.
     hl(M["ns_" .. mode], "StatusLineMoody", {
       fg = mode_color_unblended,
       bold = M.options.bold_nr,
@@ -287,35 +227,14 @@ local function setup_ns_and_hlgroups()
       fg = mode_color_blended,
     })
 
-    -- if extend_to_linenr then
-    --   hl(M["ns_" .. mode], "CursorLineNr", {
-    --     fg = mode_color_unblended,
-    --     bold = M.options.bold_nr,
-    --     bg = default_cursorline and cursorline_default_bg or mode_color_blended,
-    --   })
-    -- end
-
-    -- if extend_to_signs then
-    --   hl(M["ns_" .. mode], "CursorLineSign", {
-    --     bg = default_cursorline and cursorline_default_bg or mode_color_blended,
-    --   })
-    -- end
-
-    -- if extend_to_folds then
-    --   hl(M["ns_" .. mode], "CursorLineFold", {
-    --     bg = default_cursorline and cursorline_default_bg or mode_color_blended,
-    --   })
-    -- end
-    --
     if moody_column.enabled then
       local fold_colors = utils.generate_gradients(
         M.options.moody_column.folds_start_color,
         M.options.moody_column.folds_end_color,
         vim.o.foldnestmax
       )
-      -- for fold levels
       for level, color in ipairs(fold_colors) do
-        -- set the hl for foldcolumn for not current line
+        -- fold-column colour for non-current lines
         hl(M["ns_" .. mode], "FoldLevel_" .. level, { fg = color })
         if mode == "visual" then
           hl(
@@ -324,16 +243,15 @@ local function setup_ns_and_hlgroups()
             { fg = color, bg = default_cursorline and cursorline_default_bg or mode_color_blended }
           )
         end
-        -- settings for fold, and in case of ufo UfoCursorFoldedLine
+        -- fold background (ufo's UfoCursorFoldedLine) on the cursor line
         hl(
           M["ns_" .. mode],
           "UfoCursorFoldedLine",
           { bg = default_cursorline and cursorline_default_bg or mode_color_blended }
         )
 
-        -- set the hl for foldcolumn for current line
+        -- fold-column colour for the current line (folds sit before linenr)
         hl(M["ns_" .. mode], "CursorLineFoldLevel_" .. level, {
-          -- extend_to_linenr because folds come before linenr
           bg = extend_to_linenr and (default_cursorline and cursorline_default_bg or mode_color_blended) or "none",
           fg = color,
         })
@@ -341,18 +259,17 @@ local function setup_ns_and_hlgroups()
     end
   end
 
-  -- visual need special treatment because neovim does
-  -- not seem to use namespace specified hl group for Visual.
+  -- Visual needs special treatment: Neovim does not use the namespace-specific
+  -- hl group for the built-in Visual group.
   hl(
     ---@diagnostic disable-next-line: undefined-field
     M.ns_visual,
     "Visual",
-    -- { bg = default_cursorline and visual_default_bg or M.options.hl_blended.visual }
     { bg = M.options.hl_blended.visual }
   )
 
-  -- Special hl group in global ns for use where you might want just a normal cursorline
-  -- hl(0, "MoodyNormal", { bg = default_cursorline and cursorline_default_bg or M.options.hl_blended.normal })
+  -- A plain normal-mode cursorline in the global namespace, for callers that
+  -- just want a moody cursorline without mode switching.
   hl(0, "MoodyNormal", { bg = M.options.hl_blended.normal })
 end
 
@@ -500,10 +417,6 @@ M.defaults = {
 function M.trigger(win)
   win = win or vim.api.nvim_get_current_win()
   M.options.disabled_list["win" .. win] = nil
-  --
-  -- vim.api.nvim_set_option_value("cursorline", true, {
-  --   win = win,
-  -- })
   ---@diagnostic disable-next-line: undefined-field
   vim.api.nvim_win_set_hl_ns(win, M.ns_normal)
 end

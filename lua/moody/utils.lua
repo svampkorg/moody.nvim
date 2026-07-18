@@ -9,7 +9,6 @@ local darken = require("moody.math").darken
 local blend_c = require("moody.math").blend
 
 local tohex = require("moody.math").int_to_hex_string
--- local options = require("moody.config").options
 
 --- switch between string choice in table of string key, and table value choices
 --- A default case is not mandatory, but it will return nil if there is none :P
