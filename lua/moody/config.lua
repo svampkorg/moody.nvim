@@ -56,7 +56,7 @@ local function get_rec_text()
   if rec_reg == "" then
     return ""
   else
-    return M.options.recording.pre_registry_text .. rec_reg .. M.options.recording.post_registry_text .. " "
+    return M.options.recording.prefix .. rec_reg .. M.options.recording.suffix .. " "
   end
 end
 
@@ -88,15 +88,13 @@ end
 ---@param filetype string: the filetype to check if it's disabled
 ---@return boolean: true if filetype was in list of disabled filetypes
 local function is_disabled_filetype(filetype)
-  local disabled_filetypes = require("moody.config").options.disabled_filetypes
-  return vim.tbl_contains(disabled_filetypes, filetype)
+  return vim.tbl_contains(M.options.disabled.filetypes, filetype)
 end
 
 ---@param buftype string: the filetype to check if it's disabled
 ---@return boolean: true if filetype was in list of disabled filetypes
 local function is_disabled_buftype(buftype)
-  local disabled_buftypes = require("moody.config").options.disabled_buftypes
-  return vim.tbl_contains(disabled_buftypes, buftype)
+  return vim.tbl_contains(M.options.disabled.buftypes, buftype)
 end
 
 ---@param buftype string: the filetype to check if it's disabled
@@ -110,12 +108,13 @@ local function setup_ns_and_hlgroups()
   M.options.hl_unblended = utils.hl_unblended()
   M.options.hl_blended = utils.hl_blended(M.options.blends)
 
-  local moody_column = M.options.moody_column
+  local column = M.options.column
+  local column_hl = column.highlight
   local lineNrHl = vim.api.nvim_get_hl(0, { name = "LineNr" })
   local normalHl = vim.api.nvim_get_hl(0, { name = "Normal" })
   local signColumnHl = vim.api.nvim_get_hl(0, { name = "SignColumn" })
   local cursorLineHl = vim.api.nvim_get_hl(0, { name = "CursorLine" })
-  local is_default_cl = M.options.default_cursorline
+  local line_number_only = M.options.line_number_only
 
   -- Separator between the moody column and the code: blend the LineNr
   -- foreground toward the editor background.
@@ -126,10 +125,11 @@ local function setup_ns_and_hlgroups()
 
   local cursorline_default_bg = cursorLineHl.bg
 
-  local default_cursorline = M.options.default_cursorline
-  local extend_to_linenr = M.options.extend_to_linenr or moody_column.enabled
-  local extend_to_signs = M.options.extend_to_signs or moody_column.enabled
-  local extend_to_folds = M.options.extend_to_folds or moody_column.enabled
+  -- Enabling the moody column implies extending the cursorline through it.
+  local extend = M.options.extend
+  local extend_to_linenr = extend.line_number or column.enabled
+  local extend_to_signs = extend.signs or column.enabled
+  local extend_to_folds = extend.folds or column.enabled
 
   for _, mode in ipairs(M.modes) do
     M["ns_" .. mode] = vim.api.nvim_create_namespace("Moody_" .. mode .. "_ns")
@@ -139,30 +139,30 @@ local function setup_ns_and_hlgroups()
     local mode_color_blended_darker = blend(tohex(normalHl.bg), 0.5, M.options.hl_blended[mode])
 
     hl(M["ns_" .. mode], "LineNr", {
-      fg = moody_column.column_options.highlight.fg or lineNrHl.fg,
-      bg = moody_column.column_options.highlight.bg or lineNrHl.bg,
+      fg = column_hl.fg or lineNrHl.fg,
+      bg = column_hl.bg or lineNrHl.bg,
     })
-    hl(M["ns_" .. mode], "SignColumn", { bg = moody_column.column_options.highlight.bg or signColumnHl.bg })
+    hl(M["ns_" .. mode], "SignColumn", { bg = column_hl.bg or signColumnHl.bg })
 
     hl(M["ns_" .. mode], "MoodyAlphabeticMark", {
       fg = "#ff007c",
-      bg = not is_default_cl and moody_column.column_options.highlight.bg or "none",
+      bg = not line_number_only and column_hl.bg or "none",
     })
     hl(M["ns_" .. mode], "MoodyAlphabeticMarkMode", {
       fg = "#ff007c",
-      bg = not is_default_cl and mode_color_blended or "none",
+      bg = not line_number_only and mode_color_blended or "none",
     })
     hl(M["ns_" .. mode], "MoodyOtherMark", {
       fg = "#48ff32",
-      bg = moody_column.column_options.highlight.bg or "none",
+      bg = column_hl.bg or "none",
     })
     hl(M["ns_" .. mode], "MoodyOtherMarkMode", {
       fg = "#48ff32",
-      bg = not is_default_cl and mode_color_blended or "none",
+      bg = not line_number_only and mode_color_blended or "none",
     })
 
     hl(M["ns_" .. mode], "MoodySignColumn", {
-      bg = moody_column.column_options.highlight.bg or "none",
+      bg = column_hl.bg or "none",
     })
     hl(M["ns_" .. mode], "MoodySignColumnMode", {
       bg = mode_color_blended,
@@ -187,12 +187,12 @@ local function setup_ns_and_hlgroups()
     })
 
     hl(M["ns_" .. mode], "MoodySeparatorMode", {
-      fg = moody_column.separator.highlight.fg or cursorline_default_bg,
-      bg = not is_default_cl and (mode_color_blended or cursorline_default_bg) or "none",
+      fg = column.separator.highlight.fg or cursorline_default_bg,
+      bg = not line_number_only and (mode_color_blended or cursorline_default_bg) or "none",
     })
 
     hl(M["ns_" .. mode], "MoodySign", {
-      bg = not is_default_cl and mode_color_blended or "none",
+      bg = not line_number_only and mode_color_blended or "none",
     })
 
     hl(M["ns_" .. mode], "CursorLine", { bg = mode_color_blended })
@@ -202,37 +202,30 @@ local function setup_ns_and_hlgroups()
 
     hl(M["ns_" .. mode], "CursorLineNr", {
       fg = mode_color_unblended,
-      bold = M.options.bold_nr,
-      bg = not is_default_cl and (extend_to_linenr and mode_color_blended)
-        or (moody_column.column_options.highlight.bg or "none"),
+      bold = M.options.bold_line_number,
+      bg = not line_number_only and (extend_to_linenr and mode_color_blended) or (column_hl.bg or "none"),
     })
     hl(M["ns_" .. mode], "CursorLineSign", {
-      bg = not is_default_cl and (extend_to_signs and mode_color_blended)
-        or (moody_column.column_options.highlight.bg or "none"),
+      bg = not line_number_only and (extend_to_signs and mode_color_blended) or (column_hl.bg or "none"),
     })
     hl(M["ns_" .. mode], "CursorLineFold", {
-      bg = not is_default_cl and (extend_to_folds and mode_color_blended)
-        or (moody_column.column_options.highlight.bg or "none"),
+      bg = not line_number_only and (extend_to_folds and mode_color_blended) or (column_hl.bg or "none"),
     })
 
     -- Exposed for a statusline mode indicator.
     hl(M["ns_" .. mode], "StatusLineMoody", {
       fg = mode_color_unblended,
-      bold = M.options.bold_nr,
+      bold = M.options.bold_line_number,
       bg = mode_color_blended,
     })
     hl(M["ns_" .. mode], "StatusLineMoodyInverted", {
       bg = mode_color_unblended,
-      bold = M.options.bold_nr,
+      bold = M.options.bold_line_number,
       fg = mode_color_blended,
     })
 
-    if moody_column.enabled then
-      local fold_colors = utils.generate_gradients(
-        M.options.moody_column.folds_start_color,
-        M.options.moody_column.folds_end_color,
-        vim.o.foldnestmax
-      )
+    if column.enabled then
+      local fold_colors = utils.generate_gradients(column.folds.start_color, column.folds.end_color, vim.o.foldnestmax)
       for level, color in ipairs(fold_colors) do
         -- fold-column colour for non-current lines
         hl(M["ns_" .. mode], "FoldLevel_" .. level, { fg = color })
@@ -240,19 +233,19 @@ local function setup_ns_and_hlgroups()
           hl(
             M["ns_" .. mode],
             "FoldLevelVisual_" .. level,
-            { fg = color, bg = default_cursorline and cursorline_default_bg or mode_color_blended }
+            { fg = color, bg = line_number_only and cursorline_default_bg or mode_color_blended }
           )
         end
         -- fold background (ufo's UfoCursorFoldedLine) on the cursor line
         hl(
           M["ns_" .. mode],
           "UfoCursorFoldedLine",
-          { bg = default_cursorline and cursorline_default_bg or mode_color_blended }
+          { bg = line_number_only and cursorline_default_bg or mode_color_blended }
         )
 
         -- fold-column colour for the current line (folds sit before linenr)
         hl(M["ns_" .. mode], "CursorLineFoldLevel_" .. level, {
-          bg = extend_to_linenr and (default_cursorline and cursorline_default_bg or mode_color_blended) or "none",
+          bg = extend_to_linenr and (line_number_only and cursorline_default_bg or mode_color_blended) or "none",
           fg = color,
         })
       end
@@ -273,56 +266,73 @@ local function setup_ns_and_hlgroups()
   hl(0, "MoodyNormal", { bg = M.options.hl_blended.normal })
 end
 
+---@class Highlight
+---@field fg? string: foreground colour, "#rrggbb"
+---@field bg? string: background colour, "#rrggbb"
+
+---@class Extend
+---@field line_number boolean: extend the cursorline colour into the line-number column
+---@field signs boolean: extend the cursorline colour into the sign column
+---@field folds boolean: extend the cursorline colour into the fold column
+
+---@class Disabled
+---@field filetypes string[]: filetypes moody leaves alone (e.g. "TelescopePrompt")
+---@field buftypes string[]: buftypes moody leaves alone (e.g. "nofile")
+
+---@class Recording
+---@field enabled boolean: show a macro-recording indicator at the end of the cursorline
+---@field icon string: icon shown next to the recording register
+---@field prefix string: text shown before the register character
+---@field suffix string: text shown after the register character
+---@field right_padding integer: cells of right padding (shifts the indicator left)
+
+---@class ColumnSeparator
+---@field char string: character drawn between the moody column and the code
+---@field highlight Highlight: separator highlight; defaults to the CursorLine background
+
+---@class ColumnFolds
+---@field enabled boolean: render folds in the moody column
+---@field start_color string: gradient start colour for fold levels, "#rrggbb"
+---@field end_color string: gradient end colour for fold levels, "#rrggbb"
+
+---@class ColumnMarks
+---@field enabled boolean: render marks in the moody column
+---@field alphabetic boolean: show alphabetic (a-z) marks
+---@field other boolean: show non-alphabetic marks
+
+---@class Column
+---@field enabled boolean: replace the statuscolumn with moody's own
+---@field numbers boolean: render line numbers
+---@field signs boolean: render signs
+---@field folds ColumnFolds: fold rendering + gradient
+---@field marks ColumnMarks: mark rendering
+---@field highlight Highlight: base highlight for the column (typically just a bg)
+---@field separator ColumnSeparator: separator between the column and the code
+
 ---@class Config
----@field blends Blends: how much to blend colors with black for the cursorline
----@field colors Colors: table of colours with respective mode
----@field disabled_filetypes table<string>: List of filetypes to disable this plugin for
----@field disabled_buftypes table<string>: List of buffers to disable this plugin for
----@field bold_nr boolean: bold linenumbers or not
----@field default_cursorline boolean: bold linenumbers or not
----@field extend_to_linenr boolean: extend the cursorline into linenumbers
----@field recording Recording: bold linenumbers or not
----@field extend_to_signs boolean: textend to signcolumn
----@field extend_to_folds boolean: textend to foldcolumn
----@field moody_column MoodyColumn: settings for the statuscolumn folds
----@field disabled_list table: list of window ids where Moody is disabled. Internally handled.
+---@field colors Colors: per-mode base colour (a `*Moody` highlight group overrides it)
+---@field blends Blends|number: per-mode blend amount toward the background, or one number for all
+---@field bold_line_number boolean: bold the cursor-line number
+---@field line_number_only boolean: colour only the line number, leaving the default cursorline
+---@field extend Extend: extend the cursorline colour into adjacent columns
+---@field disabled Disabled: filetypes/buftypes to leave alone
+---@field recording Recording: macro-recording indicator
+---@field column Column: moody's own statuscolumn
 M.options = {}
 
 ---@type Config
 ---@diagnostic disable-next-line: missing-fields
 M.defaults = {
-  ---@class Blends
-  ---@field normal number: hex value for normal mode color
-  ---@field insert number: hex value for insert mode color
-  ---@field visual number: hex value for visual mode color
-  ---@field command number: hex value for command mode color
-  ---@field operator number: hex value for operator mode color
-  ---@field replace number: hex value for replace mode color
-  ---@field select number: hex value for select mode color
-  ---@field terminal number: hex value for terminal mode color
-  ---@field terminal_n number: hex value for terminal normal mode color
-  ---@field disabled_list table: list of window ids where Moody is disabled. Internally handled.
-  blends = {
-    normal = 0.2,
-    insert = 0.2,
-    visual = 0.2,
-    command = 0.2,
-    operator = 0.2,
-    replace = 0.2,
-    select = 0.2,
-    terminal = 0.2,
-    terminal_n = 0.2,
-  },
   ---@class Colors
-  ---@field normal string: hex value for normal mode color
-  ---@field insert string: hex value for insert mode color
-  ---@field visual string: hex value for visual mode color
-  ---@field command string: hex value for command mode color
-  ---@field operator string: hex value for operator mode color
-  ---@field replace string: hex value for replace mode color
-  ---@field select string: hex value for select mode color
-  ---@field terminal string: hex value for terminal mode color
-  ---@field terminal_n string: hex value for terminal normal mode color
+  ---@field normal string
+  ---@field insert string
+  ---@field visual string
+  ---@field command string
+  ---@field operator string
+  ---@field replace string
+  ---@field select string
+  ---@field terminal string
+  ---@field terminal_n string
   colors = {
     normal = "#00BFFF",
     insert = "#70CF67",
@@ -334,82 +344,70 @@ M.defaults = {
     terminal = "#4CD4BD",
     terminal_n = "#00BBCC",
   },
-  ---@class Highlight
-  ---@field fg string?: forground color
-  ---@field bg string?: background color
-  ---
-  ---@class MoodyColumnSeparator
-  ---@field char string: A character to use as separator. Defaults to empty.
-  ---@field highlight Highlight: A hexadecimal value to use for the foreground
-  --- of separator. Defaults to bg of CursorLine
-
-  ---@class MoodyColumnOptions
-  ---@field folds boolean: Include folds
-  ---@field signs boolean: Include signs
-  ---@field marks boolean: Incluse marks
-  ---@field numbers boolean: Include line numbers
-  ---@field highlight Highlight: highlight to use for the column. Typically a bg maybe.
-
-  ---@class MoodyColumn
-  ---@field enabled boolean: use moody column
-  ---@field extend_to boolean: extend moody to moody column
-  ---@field folds_start_color string: hex format start color for fold levels
-  ---@field folds_end_color string: hex format end color for fold levels
-  ---@field separator MoodyColumnSeparator: some settings for the separator between moody_column and code
-  ---@field column_options MoodyColumnOptions: What to show in the MoodyColumn
-  ---@field alphabetic_marks boolean: Show alphabetic marks in the Column
-  ---@field other_marks boolean: Show other non-alphabetic marks in the Column
-  moody_column = {
+  ---@class Blends
+  ---@field normal number
+  ---@field insert number
+  ---@field visual number
+  ---@field command number
+  ---@field operator number
+  ---@field replace number
+  ---@field select number
+  ---@field terminal number
+  ---@field terminal_n number
+  blends = {
+    normal = 0.2,
+    insert = 0.2,
+    visual = 0.2,
+    command = 0.2,
+    operator = 0.2,
+    replace = 0.2,
+    select = 0.2,
+    terminal = 0.2,
+    terminal_n = 0.2,
+  },
+  bold_line_number = true,
+  line_number_only = false,
+  extend = {
+    line_number = false,
+    signs = false,
+    folds = false,
+  },
+  disabled = {
+    filetypes = {},
+    buftypes = {
+      "nofile",
+      "prompt",
+      "snacks_picker_input",
+      "snacks_picker_preview",
+      "snacks_picker_list",
+    },
+  },
+  recording = {
     enabled = false,
-    folds_start_color = "#C1C1C1",
-    folds_end_color = "#2F2F2F",
+    icon = "󰑋",
+    prefix = "[",
+    suffix = "]",
+    right_padding = 2,
+  },
+  column = {
+    enabled = false,
+    numbers = true,
+    signs = true,
+    folds = {
+      enabled = true,
+      start_color = "#C1C1C1",
+      end_color = "#2F2F2F",
+    },
+    marks = {
+      enabled = true,
+      alphabetic = true,
+      other = false,
+    },
+    highlight = {},
     separator = {
       char = "",
       highlight = {},
     },
-    column_options = {
-      folds = true,
-      signs = true,
-      marks = true,
-      numbers = true,
-      highlight = {},
-    },
-    alphabetic_marks = true,
-    other_marks = false,
-  },
-  ---@type table<string>
-  disabled_filetypes = {},
-  ---@type table<string>
-  disabled_buftypes = {
-    "nofile",
-    "prompt",
-    "snacks_picker_input",
-    "snacks_picker_preview",
-    "snacks_picker_list",
-  },
-  disabled_list = {},
-  ---@type boolean
-  bold_nr = true,
-  ---@type boolean
-  default_cursorline = false,
-  ---@type boolean
-  extend_to_linenr = false,
-  ---@type boolean
-  extend_to_signs = false,
-  ---@type boolean
-  extend_to_folds = false,
-  ---@class Recording
-  ---@field enabled boolean: set to true to enable recording indicator
-  ---@field icon string: set an icon to show next to the register indicator
-  ---@field pre_registry_text string: text or char to show before recording registry
-  ---@field post_registry_text string: text or char to show after recording registry
-  ---@field right_padding integer: how much space to pad to the right of the recording indicator (shifts it to the left)
-  recording = {
-    enabled = false,
-    icon = "󰑋",
-    pre_registry_text = "[",
-    post_registry_text = "]",
-    right_padding = 2,
   },
 }
 
@@ -488,7 +486,7 @@ function M.trigger_mode(event, win)
 end
 
 local function setup_statuscolumn()
-  if M.options.moody_column.enabled then
+  if M.options.column.enabled then
     vim.cmd("set statuscolumn=%!v:lua.require('moody.statuscolumn').myStatusColumn()")
   end
 end
@@ -511,18 +509,13 @@ function M.validate(options)
   end
 
   local expected = {
-    blends = "table",
     colors = "table",
-    disabled_filetypes = "table",
-    disabled_buftypes = "table",
-    disabled_list = "table",
-    bold_nr = "boolean",
-    default_cursorline = "boolean",
-    extend_to_linenr = "boolean",
-    extend_to_signs = "boolean",
-    extend_to_folds = "boolean",
+    bold_line_number = "boolean",
+    line_number_only = "boolean",
+    extend = "table",
+    disabled = "table",
     recording = "table",
-    moody_column = "table",
+    column = "table",
   }
   for key, kind in pairs(expected) do
     local value = options[key]
@@ -531,20 +524,37 @@ function M.validate(options)
     end
   end
 
-  -- colors must be "#RRGGBB" hex strings
+  -- colors must be "#rrggbb" hex strings
   if options.colors then
     for mode, color in pairs(options.colors) do
       if type(color) ~= "string" or not color:match("^#%x%x%x%x%x%x$") then
-        return false, ('`colors.%s` should be a "#RRGGBB" hex string'):format(tostring(mode))
+        return false, ('`colors.%s` should be a "#rrggbb" hex string'):format(tostring(mode))
       end
     end
   end
 
-  -- blends must be numbers in [0, 1]
-  if options.blends then
-    for mode, amount in pairs(options.blends) do
-      if type(amount) ~= "number" or amount < 0 or amount > 1 then
-        return false, ("`blends.%s` should be a number between 0 and 1"):format(tostring(mode))
+  -- blends is a single number or a table of per-mode numbers, each in [0, 1]
+  local function is_blend(value)
+    return type(value) == "number" and value >= 0 and value <= 1
+  end
+  if options.blends ~= nil then
+    if type(options.blends) == "table" then
+      for mode, amount in pairs(options.blends) do
+        if not is_blend(amount) then
+          return false, ("`blends.%s` should be a number between 0 and 1"):format(tostring(mode))
+        end
+      end
+    elseif not is_blend(options.blends) then
+      return false, "`blends` should be a number between 0 and 1, or a table of them"
+    end
+  end
+
+  -- disabled.filetypes / disabled.buftypes must be lists
+  if options.disabled then
+    for _, key in ipairs({ "filetypes", "buftypes" }) do
+      local value = options.disabled[key]
+      if value ~= nil and type(value) ~= "table" then
+        return false, ("`disabled.%s` should be a table"):format(key)
       end
     end
   end
@@ -561,13 +571,17 @@ function M.__setup(options)
 
   M.options = vim.tbl_deep_extend("force", {}, M.defaults, options or {})
 
+  -- Internal book-keeping (not user-facing): windows moody has been manually
+  -- disabled for via M.reset(). Initialised here rather than in the defaults.
+  M.options.disabled_list = {}
+
   local mode_group = vim.api.nvim_create_augroup("MoodyModeGroup", { clear = true })
   local rec_group = vim.api.nvim_create_augroup("MoodyRecordingGroup", { clear = true })
 
   -- load up the "colour caches" and setup highlights with it
   setup_ns_and_hlgroups()
 
-  if M.options.moody_column.enabled then
+  if M.options.column.enabled then
     -- setup statuscolumn
     setup_statuscolumn()
   end

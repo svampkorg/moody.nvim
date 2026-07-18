@@ -46,8 +46,9 @@ function M.check()
     warn("Normal highlight has no background; cursorline blends against a black/white fallback")
   end
 
-  local ft = (config.options and config.options.disabled_filetypes) or {}
-  local bt = (config.options and config.options.disabled_buftypes) or {}
+  local disabled = config.options.disabled or {}
+  local ft = disabled.filetypes or {}
+  local bt = disabled.buftypes or {}
   info(("disabled filetypes: %s"):format(#ft > 0 and table.concat(ft, ", ") or "none"))
   info(("disabled buftypes: %s"):format(#bt > 0 and table.concat(bt, ", ") or "none"))
 end
