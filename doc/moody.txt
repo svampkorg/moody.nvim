@@ -26,7 +26,7 @@ moody.setup({options})                                         *moody.setup()*
         terminal_n = 0.2,
         visual = 0.2
       },
-      bold_nr = true,
+      bold_line_number = true,
       colors = {
         command = "#EB788B",
         insert = "#70CF67",
@@ -38,35 +38,42 @@ moody.setup({options})                                         *moody.setup()*
         terminal_n = "#00BBCC",
         visual = "#AD6FF7"
       },
-      default_cursorline = false,
-      disabled_buftypes = { "nofile", "terminal", "prompt" },
-      disabled_filetypes = {},
-      disabled_list = {},
-      extend_to_folds = false,
-      extend_to_linenr = false,
-      extend_to_signs = false,
-      moody_column = {
-        alphabetic_marks = true,
-        column_options = {
-          folds = true,
-          marks = true,
-          numbers = true,
-          signs = true
-        },
+      column = {
         enabled = false,
-        folds_end_color = "#2F2F2F",
-        folds_start_color = "#C1C1C1",
-        other_marks = true,
+        folds = {
+          enabled = true,
+          end_color = "#2F2F2F",
+          start_color = "#C1C1C1"
+        },
+        highlight = {},
+        marks = {
+          alphabetic = true,
+          enabled = true,
+          other = false
+        },
+        numbers = true,
         separator = {
-          char = ""
-        }
+          char = "",
+          highlight = {}
+        },
+        signs = true
       },
+      disabled = {
+        buftypes = { "nofile", "prompt", "snacks_picker_input", "snacks_picker_preview", "snacks_picker_list" },
+        filetypes = {}
+      },
+      extend = {
+        folds = false,
+        line_number = false,
+        signs = false
+      },
+      line_number_only = false,
       recording = {
         enabled = false,
         icon = "󰑋",
-        post_registry_text = "]",
-        pre_registry_text = "[",
-        right_padding = 2
+        prefix = "[",
+        right_padding = 2,
+        suffix = "]"
       }
     }
 
@@ -80,9 +87,12 @@ MathModule                                                        *MathModule*
 
 
     Fields: ~
-        {int_to_hex_string} (function)  Will return the bigger number
-        {blend}             (function)  Blends two colors together with an
-                                        amount from 0 to 1,
+        {int_to_hex_string} (function)  convert an integer colour to a
+                                        "#rrggbb" string
+        {rgb}               (function)  split a "#rrggbb" string into {r, g,
+                                        b} channels
+        {blend}             (function)  mix two colours by an amount from 0
+                                        (bg) to 1 (fg)
 
 
 M.int_to_hex_string()                                  *M.int_to_hex_string()*
@@ -100,13 +110,110 @@ ConfigModule                                                    *ConfigModule*
         {options}  (Config)  config table extending defaults
 
 
+Highlight                                                          *Highlight*
+
+
+    Fields: ~
+        {fg} (string)  foreground colour, "#rrggbb"
+        {bg} (string)  background colour, "#rrggbb"
+
+
+Extend                                                                *Extend*
+
+
+    Fields: ~
+        {line_number} (boolean)  extend the cursorline colour into the
+                                 line-number column
+        {signs}       (boolean)  extend the cursorline colour into the sign
+                                 column
+        {folds}       (boolean)  extend the cursorline colour into the fold
+                                 column
+
+
+Disabled                                                            *Disabled*
+
+
+    Fields: ~
+        {filetypes} (string[])  filetypes moody leaves alone (e.g.
+                                "TelescopePrompt")
+        {buftypes}  (string[])  buftypes moody leaves alone (e.g. "nofile")
+
+
+Recording                                                          *Recording*
+
+
+    Fields: ~
+        {enabled}       (boolean)  show a macro-recording indicator at the end
+                                   of the cursorline
+        {icon}          (string)   icon shown next to the recording register
+        {prefix}        (string)   text shown before the register character
+        {suffix}        (string)   text shown after the register character
+        {right_padding} (integer)  cells of right padding (shifts the
+                                   indicator left)
+
+
+ColumnSeparator                                              *ColumnSeparator*
+
+
+    Fields: ~
+        {char}      (string)     character drawn between the moody column and
+                                 the code
+        {highlight} (Highlight)  separator highlight; defaults to the
+                                 CursorLine background
+
+
+ColumnFolds                                                      *ColumnFolds*
+
+
+    Fields: ~
+        {enabled}     (boolean)  render folds in the moody column
+        {start_color} (string)   gradient start colour for fold levels,
+                                 "#rrggbb"
+        {end_color}   (string)   gradient end colour for fold levels,
+                                 "#rrggbb"
+
+
+ColumnMarks                                                      *ColumnMarks*
+
+
+    Fields: ~
+        {enabled}    (boolean)  render marks in the moody column
+        {alphabetic} (boolean)  show alphabetic (a-z) marks
+        {other}      (boolean)  show non-alphabetic marks
+
+
+Column                                                                *Column*
+
+
+    Fields: ~
+        {enabled}   (boolean)          replace the statuscolumn with moody's
+                                       own
+        {numbers}   (boolean)          render line numbers
+        {signs}     (boolean)          render signs
+        {folds}     (ColumnFolds)      fold rendering + gradient
+        {marks}     (ColumnMarks)      mark rendering
+        {highlight} (Highlight)        base highlight for the column
+                                       (typically just a bg)
+        {separator} (ColumnSeparator)  separator between the column and the
+                                       code
+
+
 Config                                                                *Config*
 
 
     Fields: ~
-        {blends} (Blends)  how much to blend colors with black for the
-                           cursorline
-        {colors} (Colors)  table of colours with respective mode
+        {colors}           (Colors)         per-mode base colour (a `*Moody`
+                                            highlight group overrides it)
+        {blends}           (Blends|number)  per-mode blend amount toward the
+                                            background, or one number for all
+        {bold_line_number} (boolean)        bold the cursor-line number
+        {line_number_only} (boolean)        colour only the line number,
+                                            leaving the default cursorline
+        {extend}           (Extend)         extend the cursorline colour into
+                                            adjacent columns
+        {disabled}         (Disabled)       filetypes/buftypes to leave alone
+        {recording}        (Recording)      macro-recording indicator
+        {column}           (Column)         moody's own statuscolumn
 
 
 M.is_disabled()                                              *M.is_disabled()*
@@ -115,6 +222,10 @@ M.is_disabled()                                              *M.is_disabled()*
     Return: ~
         boolean: true if filetype was in list of disabled filetypes or
         buftypes
+
+
+M.defaults()                                                    *M.defaults()*
+
 
 
 
