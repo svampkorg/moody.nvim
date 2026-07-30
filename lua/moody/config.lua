@@ -721,7 +721,8 @@ function M.__setup(options)
           return
         end
 
-        M.del_sl_mark(event.buf)
+        pcall(M.del_sl_mark, event.buf)
+        -- M.del_sl_mark(event.buf)
       end,
     })
 
@@ -759,7 +760,8 @@ function M.__setup(options)
           return
         end
 
-        M.del_sl_mark(event.buf)
+        pcall(M.del_sl_mark, event.buf)
+        -- M.del_sl_mark(event.buf)
       end,
     })
   end
