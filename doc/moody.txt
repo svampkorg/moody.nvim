@@ -161,8 +161,8 @@ ColumnSeparator                                              *ColumnSeparator*
                                       and the code
         {highlight}      (Highlight)  separator highlight; defaults to the
                                       CursorLine background
-        {hide_offscreen} (boolean)    omit the separator on lines rendered
-                                      outside the
+        {hide_offscreen} (boolean)    on lines rendered outside the window
+                                      viewport,
 
 
 M.is_disabled()                                              *M.is_disabled()*
@@ -174,9 +174,10 @@ M.is_disabled()                                              *M.is_disabled()*
 
 
 M.options()                                                      *M.options()*
-    window viewport. nvim-treesitter-context builds its context gutter by 
-    evaluating this window's 'statuscolumn' for the (scrolled-off) ancestor 
-    lines, so the separator would otherwise bleed into that window.
+    draw a blank cell of the same width instead of the separator glyph. 
+    nvim-treesitter-context builds its context gutter by evaluating this 
+    window's 'statuscolumn' for the (scrolled-off) ancestor lines, so the 
+    separator would otherwise bleed into that window as a stray line.
 
 
 
