@@ -54,6 +54,7 @@ moody.setup({options})                                         *moody.setup()*
         numbers = true,
         separator = {
           char = "",
+          hide_offscreen = true,
           highlight = {}
         },
         signs = true
@@ -156,64 +157,12 @@ ColumnSeparator                                              *ColumnSeparator*
 
 
     Fields: ~
-        {char}      (string)     character drawn between the moody column and
-                                 the code
-        {highlight} (Highlight)  separator highlight; defaults to the
-                                 CursorLine background
-
-
-ColumnFolds                                                      *ColumnFolds*
-
-
-    Fields: ~
-        {enabled}     (boolean)  render folds in the moody column
-        {start_color} (string)   gradient start colour for fold levels,
-                                 "#rrggbb"
-        {end_color}   (string)   gradient end colour for fold levels,
-                                 "#rrggbb"
-
-
-ColumnMarks                                                      *ColumnMarks*
-
-
-    Fields: ~
-        {enabled}    (boolean)  render marks in the moody column
-        {alphabetic} (boolean)  show alphabetic (a-z) marks
-        {other}      (boolean)  show non-alphabetic marks
-
-
-Column                                                                *Column*
-
-
-    Fields: ~
-        {enabled}   (boolean)          replace the statuscolumn with moody's
-                                       own
-        {numbers}   (boolean)          render line numbers
-        {signs}     (boolean)          render signs
-        {folds}     (ColumnFolds)      fold rendering + gradient
-        {marks}     (ColumnMarks)      mark rendering
-        {highlight} (Highlight)        base highlight for the column
-                                       (typically just a bg)
-        {separator} (ColumnSeparator)  separator between the column and the
-                                       code
-
-
-Config                                                                *Config*
-
-
-    Fields: ~
-        {colors}           (Colors)         per-mode base colour (a `*Moody`
-                                            highlight group overrides it)
-        {blends}           (Blends|number)  per-mode blend amount toward the
-                                            background, or one number for all
-        {bold_line_number} (boolean)        bold the cursor-line number
-        {line_number_only} (boolean)        colour only the line number,
-                                            leaving the default cursorline
-        {extend}           (Extend)         extend the cursorline colour into
-                                            adjacent columns
-        {disabled}         (Disabled)       filetypes/buftypes to leave alone
-        {recording}        (Recording)      macro-recording indicator
-        {column}           (Column)         moody's own statuscolumn
+        {char}           (string)     character drawn between the moody column
+                                      and the code
+        {highlight}      (Highlight)  separator highlight; defaults to the
+                                      CursorLine background
+        {hide_offscreen} (boolean)    omit the separator on lines rendered
+                                      outside the
 
 
 M.is_disabled()                                              *M.is_disabled()*
@@ -222,6 +171,13 @@ M.is_disabled()                                              *M.is_disabled()*
     Return: ~
         boolean: true if filetype was in list of disabled filetypes or
         buftypes
+
+
+M.options()                                                      *M.options()*
+    window viewport. nvim-treesitter-context builds its context gutter by 
+    evaluating this window's 'statuscolumn' for the (scrolled-off) ancestor 
+    lines, so the separator would otherwise bleed into that window.
+
 
 
 M.defaults()                                                    *M.defaults()*
