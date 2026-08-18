@@ -136,13 +136,16 @@ end
 -- TODO: colour it with the mode (MoodySeparatorMode) when the cursor or a
 -- visual selection is on the line, i.e. is_in_cursorline() or is_in_visual_range().
 local function separator()
-  -- Don't bleed the separator into off-screen renders (e.g. the
-  -- nvim-treesitter-context window). The gutter width is already allocated, so
-  -- the cell just renders blank there, matching a plain line-number gutter.
-  if options().column.separator.hide_offscreen and is_offscreen() then
-    return ""
-  end
   local sep_char = options().column.separator.char
+  -- On off-screen renders (e.g. the nvim-treesitter-context window) draw a blank
+  -- cell of the SAME width instead of the separator glyph: dropping it entirely
+  -- would shorten the statuscolumn and shift the right-aligned numbers out of
+  -- line with the real gutter. No highlight group, so the space inherits the
+  -- preceding LineNr colour — which treesitter-context remaps to its own gutter
+  -- background, leaving just a blank cell.
+  if options().column.separator.hide_offscreen and is_offscreen() then
+    return (" "):rep(vim.fn.strdisplaywidth(sep_char))
+  end
   return "%#MoodySeparator#" .. sep_char .. "%*"
 end
 

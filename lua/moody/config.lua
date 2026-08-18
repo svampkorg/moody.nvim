@@ -289,10 +289,11 @@ end
 ---@class ColumnSeparator
 ---@field char string: character drawn between the moody column and the code
 ---@field highlight Highlight: separator highlight; defaults to the CursorLine background
----@field hide_offscreen boolean: omit the separator on lines rendered outside the
----       window viewport. nvim-treesitter-context builds its context gutter by
----       evaluating this window's 'statuscolumn' for the (scrolled-off) ancestor
----       lines, so the separator would otherwise bleed into that window.
+---@field hide_offscreen boolean: on lines rendered outside the window viewport,
+---       draw a blank cell of the same width instead of the separator glyph.
+---       nvim-treesitter-context builds its context gutter by evaluating this
+---       window's 'statuscolumn' for the (scrolled-off) ancestor lines, so the
+---       separator would otherwise bleed into that window as a stray line.
 
 ---@class ColumnFolds
 ---@field enabled boolean: render folds in the moody column
