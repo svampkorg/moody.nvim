@@ -120,10 +120,28 @@ local function is_in_visual_range()
   return false
 end
 
+-- True when the statuscolumn is being evaluated for a line outside the current
+-- window's viewport. That happens when another plugin renders our statuscolumn
+-- for off-screen lines — notably nvim-treesitter-context, which builds its
+-- context gutter by evaluating the source window's 'statuscolumn' for the
+-- (scrolled-off) ancestor lines. During a normal redraw only visible lines are
+-- drawn, so this is false. Guarded by the current==statusline_winid check in
+-- myStatusColumn(), so line("w0")/line("w$") read the window we're rendering.
+local function is_offscreen()
+  local lnum = vim.v.lnum
+  return lnum < vim.fn.line("w0") or lnum > vim.fn.line("w$")
+end
+
 -- The separator always renders uncoloured for now.
 -- TODO: colour it with the mode (MoodySeparatorMode) when the cursor or a
 -- visual selection is on the line, i.e. is_in_cursorline() or is_in_visual_range().
 local function separator()
+  -- Don't bleed the separator into off-screen renders (e.g. the
+  -- nvim-treesitter-context window). The gutter width is already allocated, so
+  -- the cell just renders blank there, matching a plain line-number gutter.
+  if options().column.separator.hide_offscreen and is_offscreen() then
+    return ""
+  end
   local sep_char = options().column.separator.char
   return "%#MoodySeparator#" .. sep_char .. "%*"
 end
